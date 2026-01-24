@@ -1,8 +1,8 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource.js';
-import { data } from './data/resource.js';
 
+// Note: Data/database removed per requirements - this is a stateless apply form
+// that forwards submissions to an external API
 defineBackend({
   auth,
-  data,
 });

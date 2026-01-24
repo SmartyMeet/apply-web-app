@@ -1,0 +1,43 @@
+{
+  "form": {
+    "title": "Apply for Position",
+    "subtitle": "Join our team and start your career journey",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your email address",
+    "phone": "Phone Number",
+    "phonePlaceholder": "+1 234 567 8900",
+    "cv": "CV / Resume",
+    "cvPlaceholder": "Upload your CV (PDF, DOC, DOCX - max 10MB)",
+    "cvBrowse": "Browse files",
+    "cvDragDrop": "or drag and drop here",
+    "submit": "Submit Application",
+    "submitting": "Submitting..."
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidPhone": "Please enter a valid phone number",
+    "fileRequired": "Please upload your CV",
+    "fileTooLarge": "File size must be less than 10MB",
+    "fileInvalidType": "Only PDF, DOC, and DOCX files are allowed"
+  },
+  "errors": {
+    "submitFailed": "Failed to submit your application. Please try again.",
+    "networkError": "Network error. Please check your connection and try again.",
+    "unexpectedError": "An unexpected error occurred. Please try again later."
+  },
+  "thankYou": {
+    "title": "Application Submitted!",
+    "subtitle": "Thank you for applying",
+    "message": "We have received your application and will review it shortly. You will hear from us soon.",
+    "referenceLabel": "Your reference number:",
+    "backHome": "Submit Another Application"
+  },
+  "language": {
+    "select": "Language",
+    "en": "English",
+    "pl": "Polski"
+  }
+}

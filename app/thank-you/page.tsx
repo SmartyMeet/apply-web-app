@@ -1,11 +1,11 @@
 import { Suspense } from 'react';
 import { config } from '@/lib/config';
-import { ApplyPage } from '@/components/ApplyPage';
+import { ThankYouPage } from '@/components/ThankYouPage';
 
-export default function RootApplyPage() {
+export default function RootThankYouPage() {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <ApplyPage tenant={config.defaultTenant} />
+      <ThankYouPage tenant={config.defaultTenant} />
     </Suspense>
   );
 }

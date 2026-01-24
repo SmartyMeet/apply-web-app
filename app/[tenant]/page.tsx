@@ -1,11 +1,16 @@
 import { Suspense } from 'react';
-import { config } from '@/lib/config';
 import { ApplyPage } from '@/components/ApplyPage';
 
-export default function RootApplyPage() {
+interface TenantApplyPageProps {
+  params: Promise<{ tenant: string }>;
+}
+
+export default async function TenantApplyPage({ params }: TenantApplyPageProps) {
+  const { tenant } = await params;
+  
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <ApplyPage tenant={config.defaultTenant} />
+      <ApplyPage tenant={tenant} />
     </Suspense>
   );
 }

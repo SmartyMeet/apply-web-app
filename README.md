@@ -1,25 +1,149 @@
-## AWS Amplify Next.js (App Router) Starter Template
+# Candidate Apply Portal
 
-This repository provides a starter template for creating applications using Next.js (App Router) and AWS Amplify, emphasizing easy setup for authentication, API, and database capabilities.
-
-## Overview
-
-This template equips you with a foundational Next.js application integrated with AWS Amplify, streamlined for scalability and performance. It is ideal for developers looking to jumpstart their project with pre-configured AWS services like Cognito, AppSync, and DynamoDB.
+A modern, responsive job application portal built with Next.js 14, designed for multi-tenant deployment on AWS Amplify.
 
 ## Features
 
-- **Authentication**: Setup with Amazon Cognito for secure user authentication.
-- **API**: Ready-to-use GraphQL endpoint with AWS AppSync.
-- **Database**: Real-time database powered by Amazon DynamoDB.
+- **Multi-tenant routing**: Support both root domain and tenant-specific paths
+- **Internationalization (i18n)**: Language switcher with cookie persistence (EN, PL)
+- **CDN-based theming**: Load tenant-specific branding from CDN with fallback defaults
+- **Modern form**: CV upload with drag-and-drop, inline validation, accessible labels
+- **Server-side proxy**: Secure API forwarding without exposing credentials
 
-## Deploying to AWS
+## URL Routing
 
-For detailed instructions on deploying your application, refer to the [deployment section](https://docs.amplify.aws/nextjs/start/quickstart/nextjs-app-router-client-components/#deploy-a-fullstack-app-to-aws) of our documentation.
+| URL Pattern | Description |
+|-------------|-------------|
+| `/` | Apply form (default tenant) |
+| `/thank-you` | Success page (default tenant) |
+| `/[tenant]/` | Apply form for specific tenant |
+| `/[tenant]/thank-you` | Success page for specific tenant |
 
-## Security
+### Tenant Resolution
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+1. If a route parameter `[tenant]` is present, that is the tenant name
+2. If no tenant parameter, use `NEXT_PUBLIC_DEFAULT_TENANT` (fallback: "default")
+
+## Internationalization (i18n)
+
+Language is determined in priority order:
+
+1. Query parameter `?lang=en`
+2. Cookie `st_lang`
+3. Browser's Accept-Language header
+4. Fallback to English (`en`)
+
+Supported languages: `en` (English), `pl` (Polish)
+
+## Environment Variables
+
+### Required
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `RUNS_API_URL` | Upstream API endpoint for form submissions | `https://api.test.smartytalent.eu/v1/runs` |
+
+### Optional
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_DEFAULT_TENANT` | Default tenant when no route param | `default` |
+| `NEXT_PUBLIC_THEME_BASE_URL` | CDN base URL for theme assets | `https://cdn.smartytalent.eu` |
+| `NEXT_PUBLIC_RUNS_API_URL` | Fallback API URL (use `RUNS_API_URL` for server-side) | - |
+
+## Theme Configuration
+
+The app loads theme JSON from CDN with cascading fallbacks:
+
+1. **Tenant theme**: `${THEME_BASE_URL}/tenants/<tenant>/apply/theme.json`
+2. **Global theme**: `${THEME_BASE_URL}/apply/theme.json`
+3. **Built-in defaults**
+
+### Theme JSON Schema
+
+```json
+{
+  "logoUrl": "https://example.com/logo.png",
+  "brandName": "Company Name",
+  "primaryColor": "#2563eb",
+  "secondaryColor": "#1e40af",
+  "backgroundColor": "#f8fafc",
+  "buttonRadius": "0.5rem"
+}
+```
+
+## Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Create .env.local (copy from .env.example)
+cp .env.example .env.local
+
+# Start development server
+npm run dev
+```
+
+Open:
+- http://localhost:3000 - Default tenant form
+- http://localhost:3000/decathlon - Tenant-specific form
+- http://localhost:3000?lang=pl - Polish language
+
+## AWS Amplify Deployment
+
+The app is configured for AWS Amplify with the `amplify.yml` build spec.
+
+Environment variables must be set in the Amplify Console:
+- `RUNS_API_URL` (required)
+- `NEXT_PUBLIC_DEFAULT_TENANT` (optional)
+- `NEXT_PUBLIC_THEME_BASE_URL` (optional)
+
+## Project Structure
+
+```
+├── app/
+│   ├── api/runs/          # API proxy route
+│   ├── thank-you/         # Root thank-you page
+│   ├── [tenant]/          # Tenant dynamic routes
+│   │   ├── page.tsx       # Tenant apply form
+│   │   └── thank-you/     # Tenant thank-you page
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx           # Root apply form
+├── components/
+│   ├── ApplyForm.tsx      # Main form component
+│   ├── ApplyPage.tsx      # Page wrapper
+│   ├── LanguageSwitcher.tsx
+│   └── ThankYouPage.tsx
+├── i18n/
+│   ├── locales/           # Translation files
+│   │   ├── en.json
+│   │   └── pl.json
+│   └── index.ts           # i18n utilities
+├── lib/
+│   ├── config.ts          # Centralized configuration
+│   └── theme.ts           # Theme loader
+└── amplify/               # Amplify backend (auth only)
+```
+
+## Manual Test Checklist
+
+- [ ] Form renders at `/`
+- [ ] Form renders at `/[tenant]/`
+- [ ] Language switcher changes translations
+- [ ] Language persists in cookie after page refresh
+- [ ] `?lang=pl` query param sets language
+- [ ] Form validation shows inline errors
+- [ ] File upload accepts PDF/DOC/DOCX
+- [ ] File upload rejects wrong types and >10MB
+- [ ] Submit button disabled while submitting
+- [ ] Success redirects to `/thank-you` or `/[tenant]/thank-you`
+- [ ] Reference ID shown on thank-you page (if returned by API)
+- [ ] Theme loads from CDN when available
+- [ ] Theme falls back to defaults when CDN fails
+- [ ] Mobile responsive layout works
 
 ## License
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
+MIT

@@ -1,0 +1,43 @@
+{
+  "form": {
+    "title": "Aplikuj na stanowisko",
+    "subtitle": "Dołącz do naszego zespołu i rozpocznij karierę",
+    "fullName": "Imię i nazwisko",
+    "fullNamePlaceholder": "Wpisz swoje imię i nazwisko",
+    "email": "Adres e-mail",
+    "emailPlaceholder": "Wpisz swój adres e-mail",
+    "phone": "Numer telefonu",
+    "phonePlaceholder": "+48 123 456 789",
+    "cv": "CV / Życiorys",
+    "cvPlaceholder": "Prześlij swoje CV (PDF, DOC, DOCX - maks. 10MB)",
+    "cvBrowse": "Wybierz plik",
+    "cvDragDrop": "lub przeciągnij i upuść tutaj",
+    "submit": "Wyślij aplikację",
+    "submitting": "Wysyłanie..."
+  },
+  "validation": {
+    "required": "To pole jest wymagane",
+    "invalidEmail": "Wpisz poprawny adres e-mail",
+    "invalidPhone": "Wpisz poprawny numer telefonu",
+    "fileRequired": "Prześlij swoje CV",
+    "fileTooLarge": "Rozmiar pliku musi być mniejszy niż 10MB",
+    "fileInvalidType": "Dozwolone są tylko pliki PDF, DOC i DOCX"
+  },
+  "errors": {
+    "submitFailed": "Nie udało się wysłać aplikacji. Spróbuj ponownie.",
+    "networkError": "Błąd sieci. Sprawdź połączenie i spróbuj ponownie.",
+    "unexpectedError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później."
+  },
+  "thankYou": {
+    "title": "Aplikacja wysłana!",
+    "subtitle": "Dziękujemy za aplikację",
+    "message": "Otrzymaliśmy Twoją aplikację i wkrótce ją przejrzymy. Skontaktujemy się z Tobą.",
+    "referenceLabel": "Twój numer referencyjny:",
+    "backHome": "Wyślij kolejną aplikację"
+  },
+  "language": {
+    "select": "Język",
+    "en": "English",
+    "pl": "Polski"
+  }
+}
