@@ -7,6 +7,7 @@ import { config, SupportedLanguage } from '@/lib/config';
 import { getTranslations, getLanguageFromCookie, detectLanguage } from '@/i18n';
 import { Theme, defaultTheme, loadTheme } from '@/lib/theme';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { TenantLogo } from './TenantLogo';
 
 interface ThankYouPageProps {
   tenant: string;
@@ -51,19 +52,13 @@ export function ThankYouPage({ tenant }: ThankYouPageProps) {
       {/* Header */}
       <header className="w-full px-4 py-4 sm:px-6 lg:px-8">
         <div className="max-w-xl mx-auto flex justify-between items-center">
+          {/* Logo/Brand - Uses TenantLogo component for CDN logo with text fallback */}
           <div className="flex items-center gap-2">
-            {theme.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img 
-                src={theme.logoUrl} 
-                alt={theme.brandName || 'Company Logo'} 
-                className="h-8 sm:h-10 w-auto"
-              />
-            ) : (
-              <span className="text-xl sm:text-2xl font-bold text-gray-900">
-                {theme.brandName || 'SmartyTalent'}
-              </span>
-            )}
+            <TenantLogo 
+              tenant={tenant}
+              className="h-8 sm:h-10"
+              fallbackClassName="text-xl sm:text-2xl"
+            />
           </div>
           
           <LanguageSwitcher 
@@ -96,19 +91,16 @@ export function ThankYouPage({ tenant }: ThankYouPageProps) {
             </div>
             
             {/* Title */}
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
               {translations.thankYou.title}
             </h1>
-            <h2 className="text-lg text-gray-600 mb-4">
-              {translations.thankYou.subtitle}
-            </h2>
             
             {/* Message */}
             <p className="text-gray-600 mb-6">
               {translations.thankYou.message}
             </p>
             
-            {/* Reference ID */}
+            {/* Reference ID (if available) */}
             {referenceId && (
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <p className="text-sm text-gray-500 mb-1">
@@ -120,17 +112,16 @@ export function ThankYouPage({ tenant }: ThankYouPageProps) {
               </div>
             )}
             
-            {/* Back Link */}
-            <Link
+            {/* Back to form link */}
+            <Link 
               href={homePath}
+              className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-white font-medium transition-colors"
               style={{ 
                 backgroundColor: theme.primaryColor,
                 borderRadius: theme.buttonRadius 
               }}
-              className="inline-block py-3 px-6 text-white font-medium transition-all
-                        hover:opacity-90 active:scale-[0.98]"
             >
-              {translations.thankYou.backHome}
+              {translations.thankYou.backButton}
             </Link>
           </div>
         </div>
@@ -138,7 +129,7 @@ export function ThankYouPage({ tenant }: ThankYouPageProps) {
 
       {/* Footer */}
       <footer className="px-4 py-6 text-center text-sm text-gray-500">
-        <p>© {new Date().getFullYear()} {theme.brandName || 'SmartyTalent'}. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} SmartyTalent. All rights reserved.</p>
       </footer>
     </div>
   );

@@ -7,6 +7,7 @@ import { getTranslations, detectLanguage, getLanguageFromCookie, setLanguageCook
 import { Theme, defaultTheme, loadTheme } from '@/lib/theme';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ApplyForm } from './ApplyForm';
+import { TenantLogo } from './TenantLogo';
 
 interface ApplyPageProps {
   tenant: string;
@@ -61,20 +62,13 @@ export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
       {/* Header */}
       <header className="w-full px-4 py-4 sm:px-6 lg:px-8">
         <div className="max-w-xl mx-auto flex justify-between items-center">
-          {/* Logo/Brand */}
+          {/* Logo/Brand - Uses TenantLogo component for CDN logo with text fallback */}
           <div className="flex items-center gap-2">
-            {theme.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img 
-                src={theme.logoUrl} 
-                alt={theme.brandName || 'Company Logo'} 
-                className="h-8 sm:h-10 w-auto"
-              />
-            ) : (
-              <span className="text-xl sm:text-2xl font-bold text-gray-900">
-                {theme.brandName || 'SmartyTalent'}
-              </span>
-            )}
+            <TenantLogo 
+              tenant={tenant}
+              className="h-8 sm:h-10"
+              fallbackClassName="text-xl sm:text-2xl"
+            />
           </div>
           
           {/* Language Switcher */}
@@ -114,7 +108,7 @@ export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
 
       {/* Footer */}
       <footer className="px-4 py-6 text-center text-sm text-gray-500">
-        <p>© {new Date().getFullYear()} {theme.brandName || 'SmartyTalent'}. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} SmartyTalent. All rights reserved.</p>
       </footer>
     </div>
   );

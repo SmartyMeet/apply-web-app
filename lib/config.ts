@@ -10,6 +10,10 @@ export const config = {
   // Theme/CDN configuration
   themeBaseUrl: process.env.NEXT_PUBLIC_THEME_BASE_URL || 'https://cdn.smartytalent.eu',
   
+  // CDN base URL for tenant logos
+  // Logo pattern: {cdnBaseUrl}/tenant/{tenantName}/logo.jpeg
+  cdnBaseUrl: process.env.NEXT_PUBLIC_CDN_BASE_URL || 'https://cdn.test-smartytalent.eu',
+  
   // i18n configuration
   defaultLanguage: 'en' as const,
   supportedLanguages: ['en', 'pl'] as const,
