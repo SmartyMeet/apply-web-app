@@ -81,14 +81,14 @@ export function TenantLogo({ tenant, className = '', fallbackClassName = '' }: T
     );
   }
   
-  // Show logo image - minimum 100x100px
+  // Show logo image - minimum 60x60px
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img 
       src={logoUrl}
       alt={`${displayName} Logo`}
       className={`w-auto object-contain ${className}`}
-      style={{ minWidth: '100px', minHeight: '100px' }}
+      style={{ minWidth: '60px', minHeight: '60px' }}
       onError={() => setLogoStatus('error')}
     />
   );
