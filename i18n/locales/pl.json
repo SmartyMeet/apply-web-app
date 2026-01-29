@@ -38,6 +38,7 @@
   "language": {
     "select": "Język",
     "en": "English",
-    "pl": "Polski"
+    "pl": "Polski",
+    "it": "Italiano"    
   }
 }

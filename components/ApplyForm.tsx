@@ -1,23 +1,16 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { config, isValidFileType, isValidFileSize } from '@/lib/config';
-import { TranslationDict, t } from '@/i18n';
+import { config, SupportedLanguage, isValidFileType, isValidFileSize } from '@/lib/config';
+import { Translations } from '@/i18n';
 import { Theme } from '@/lib/theme';
 
 interface ApplyFormProps {
   tenant: string;
-  language: string;
-  translations: TranslationDict;
+  language: SupportedLanguage;
+  translations: Translations;
   theme: Theme;
-}
-
-interface FormErrors {
-  name?: string;
-  email?: string;
-  phone?: string;
-  cv?: string;
 }
 
 interface FormData {
@@ -25,6 +18,13 @@ interface FormData {
   email: string;
   phone: string;
   cv: File | null;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  phone?: string;
+  cv?: string;
 }
 
 export function ApplyForm({ tenant, language, translations, theme }: ApplyFormProps) {
@@ -42,102 +42,73 @@ export function ApplyForm({ tenant, language, translations, theme }: ApplyFormPr
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-
+  
   // Validation functions
   const validateEmail = (email: string): boolean => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
-
+  
   const validatePhone = (phone: string): boolean => {
-    return /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]{6,}$/.test(phone.replace(/\s/g, ''));
+    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/;
+    return phone.length >= 7 && phoneRegex.test(phone);
   };
-
-  const validateField = useCallback((field: keyof FormData, value: string | File | null): string | undefined => {
-    switch (field) {
-      case 'name':
-        return !(value as string)?.trim() ? t(translations, 'validation.required') : undefined;
-      case 'email':
-        if (!(value as string)?.trim()) return t(translations, 'validation.required');
-        if (!validateEmail(value as string)) return t(translations, 'validation.invalidEmail');
-        return undefined;
-      case 'phone':
-        if (!(value as string)?.trim()) return t(translations, 'validation.required');
-        if (!validatePhone(value as string)) return t(translations, 'validation.invalidPhone');
-        return undefined;
-      case 'cv':
-        if (!value) return t(translations, 'validation.fileRequired');
-        if (!isValidFileSize(value as File)) return t(translations, 'validation.fileTooLarge');
-        if (!isValidFileType(value as File)) return t(translations, 'validation.fileInvalidType');
-        return undefined;
-      default:
-        return undefined;
-    }
-  }, [translations]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
     
-    // Clear error on change
-    if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
+    if (!formData.name.trim()) {
+      newErrors.name = translations.validation.required;
     }
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const error = validateField(name as keyof FormData, value);
-    if (error) {
-      setErrors(prev => ({ ...prev, [name]: error }));
+    
+    if (!formData.email.trim()) {
+      newErrors.email = translations.validation.required;
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = translations.validation.invalidEmail;
     }
+    
+    if (!formData.phone.trim()) {
+      newErrors.phone = translations.validation.required;
+    } else if (!validatePhone(formData.phone)) {
+      newErrors.phone = translations.validation.invalidPhone;
+    }
+    
+    if (!formData.cv) {
+      newErrors.cv = translations.validation.fileRequired;
+    } else if (!isValidFileType(formData.cv)) {
+      newErrors.cv = translations.validation.fileInvalidType;
+    } else if (!isValidFileSize(formData.cv)) {
+      newErrors.cv = translations.validation.fileTooLarge;
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
-
+  
   const handleFileChange = (file: File | null) => {
-    setFormData(prev => ({ ...prev, cv: file }));
-    
     if (file) {
-      const error = validateField('cv', file);
-      setErrors(prev => ({ ...prev, cv: error }));
-    } else {
+      if (!isValidFileType(file)) {
+        setErrors(prev => ({ ...prev, cv: translations.validation.fileInvalidType }));
+        return;
+      }
+      if (!isValidFileSize(file)) {
+        setErrors(prev => ({ ...prev, cv: translations.validation.fileTooLarge }));
+        return;
+      }
       setErrors(prev => ({ ...prev, cv: undefined }));
     }
+    setFormData(prev => ({ ...prev, cv: file }));
   };
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    handleFileChange(file);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
+  
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
-    const file = e.dataTransfer.files?.[0] || null;
-    handleFileChange(file);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      handleFileChange(file);
+    }
   };
-
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {
-      name: validateField('name', formData.name),
-      email: validateField('email', formData.email),
-      phone: validateField('phone', formData.phone),
-      cv: validateField('cv', formData.cv),
-    };
-    
-    setErrors(newErrors);
-    return !Object.values(newErrors).some(Boolean);
-  };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
@@ -149,178 +120,134 @@ export function ApplyForm({ tenant, language, translations, theme }: ApplyFormPr
     setIsSubmitting(true);
     
     try {
-      const submitData = new FormData();
-      submitData.append('tenant', tenant);
-      submitData.append('language', language);
-      submitData.append('name', formData.name);
-      submitData.append('email', formData.email);
-      submitData.append('phone', formData.phone);
+      const formPayload = new FormData();
+      formPayload.append('tenant', tenant);
+      formPayload.append('language', language);
+      formPayload.append('name', formData.name);
+      formPayload.append('email', formData.email);
+      formPayload.append('phone', formData.phone);
+      formPayload.append('sourceUrl', window.location.href);
+      
       if (formData.cv) {
-        submitData.append('cv', formData.cv);
+        formPayload.append('cv', formData.cv);
       }
       
       const response = await fetch('/api/runs', {
         method: 'POST',
-        body: submitData,
+        body: formPayload,
       });
+      
+      if (!response.ok) {
+        throw new Error('Submission failed');
+      }
       
       const result = await response.json();
       
-      if (!response.ok) {
-        throw new Error(result.error || 'Submit failed');
-      }
+      const basePath = tenant === config.defaultTenant ? '' : `/${tenant}`;
+      const refParam = result.id || result.runId || result.referenceId;
+      const queryString = refParam ? `?ref=${refParam}` : '';
       
-      // Navigate to thank you page with reference ID if available
-      const thankYouPath = tenant === config.defaultTenant 
-        ? '/thank-you' 
-        : `/${tenant}/thank-you`;
-      
-      const params = new URLSearchParams();
-      if (result.referenceId) {
-        params.set('ref', result.referenceId);
-      }
-      
-      const queryString = params.toString();
-      router.push(queryString ? `${thankYouPath}?${queryString}` : thankYouPath);
-      
+      router.push(`${basePath}/thank-you${queryString}`);
     } catch (error) {
       console.error('Submit error:', error);
-      setSubmitError(t(translations, 'errors.submitFailed'));
+      setSubmitError(translations.errors.submitFailed);
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   return (
-    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Full Name */}
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-          {t(translations, 'form.fullName')} <span className="text-red-500">*</span>
+          {translations.form.fullName} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           id="name"
-          name="name"
           value={formData.name}
-          onChange={handleInputChange}
-          onBlur={handleBlur}
-          placeholder={t(translations, 'form.fullNamePlaceholder')}
-          disabled={isSubmitting}
-          className={`w-full px-4 py-3 rounded-lg border transition-colors
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                     disabled:bg-gray-100 disabled:cursor-not-allowed
-                     ${errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'}`}
+          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+          placeholder={translations.form.fullNamePlaceholder}
+          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+            errors.name ? 'border-red-500' : 'border-gray-300'
+          }`}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? 'name-error' : undefined}
         />
         {errors.name && (
-          <p id="name-error" className="mt-1 text-sm text-red-600" role="alert">
-            {errors.name}
-          </p>
+          <p id="name-error" className="mt-1 text-sm text-red-500">{errors.name}</p>
         )}
       </div>
-
+      
       {/* Email */}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-          {t(translations, 'form.email')} <span className="text-red-500">*</span>
+          {translations.form.email} <span className="text-red-500">*</span>
         </label>
         <input
           type="email"
           id="email"
-          name="email"
           value={formData.email}
-          onChange={handleInputChange}
-          onBlur={handleBlur}
-          placeholder={t(translations, 'form.emailPlaceholder')}
-          disabled={isSubmitting}
-          className={`w-full px-4 py-3 rounded-lg border transition-colors
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                     disabled:bg-gray-100 disabled:cursor-not-allowed
-                     ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'}`}
+          onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+          placeholder={translations.form.emailPlaceholder}
+          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+            errors.email ? 'border-red-500' : 'border-gray-300'
+          }`}
           aria-invalid={!!errors.email}
           aria-describedby={errors.email ? 'email-error' : undefined}
         />
         {errors.email && (
-          <p id="email-error" className="mt-1 text-sm text-red-600" role="alert">
-            {errors.email}
-          </p>
+          <p id="email-error" className="mt-1 text-sm text-red-500">{errors.email}</p>
         )}
       </div>
-
+      
       {/* Phone */}
       <div>
         <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-          {t(translations, 'form.phone')} <span className="text-red-500">*</span>
+          {translations.form.phone} <span className="text-red-500">*</span>
         </label>
         <input
           type="tel"
           id="phone"
-          name="phone"
           value={formData.phone}
-          onChange={handleInputChange}
-          onBlur={handleBlur}
-          placeholder={t(translations, 'form.phonePlaceholder')}
-          disabled={isSubmitting}
-          className={`w-full px-4 py-3 rounded-lg border transition-colors
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                     disabled:bg-gray-100 disabled:cursor-not-allowed
-                     ${errors.phone ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'}`}
+          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+          placeholder={translations.form.phonePlaceholder}
+          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+            errors.phone ? 'border-red-500' : 'border-gray-300'
+          }`}
           aria-invalid={!!errors.phone}
           aria-describedby={errors.phone ? 'phone-error' : undefined}
         />
         {errors.phone && (
-          <p id="phone-error" className="mt-1 text-sm text-red-600" role="alert">
-            {errors.phone}
-          </p>
+          <p id="phone-error" className="mt-1 text-sm text-red-500">{errors.phone}</p>
         )}
       </div>
-
+      
       {/* CV Upload */}
       <div>
-        <label htmlFor="cv" className="block text-sm font-medium text-gray-700 mb-1">
-          {t(translations, 'form.cv')} <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {translations.form.cv} <span className="text-red-500">*</span>
         </label>
         <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
+          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+            isDragging ? 'border-blue-500 bg-blue-50' : 
+            errors.cv ? 'border-red-500' : 'border-gray-300'
+          }`}
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`relative w-full p-6 border-2 border-dashed rounded-lg cursor-pointer
-                     transition-colors text-center
-                     ${isDragging ? 'border-blue-500 bg-blue-50' : ''}
-                     ${errors.cv ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'}
-                     ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <input
-            ref={fileInputRef}
-            type="file"
-            id="cv"
-            name="cv"
-            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            onChange={handleFileInputChange}
-            disabled={isSubmitting}
-            className="sr-only"
-            aria-invalid={!!errors.cv}
-            aria-describedby={errors.cv ? 'cv-error' : 'cv-hint'}
-          />
-          
           {formData.cv ? (
             <div className="flex items-center justify-center gap-2">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span className="text-gray-700 font-medium">{formData.cv.name}</span>
+              <span className="text-gray-700">{formData.cv.name}</span>
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleFileChange(null);
-                  if (fileInputRef.current) fileInputRef.current.value = '';
-                }}
-                className="ml-2 text-red-500 hover:text-red-700"
-                aria-label="Remove file"
+                onClick={() => handleFileChange(null)}
+                className="text-red-500 hover:text-red-700 ml-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -328,61 +255,64 @@ export function ApplyForm({ tenant, language, translations, theme }: ApplyFormPr
               </button>
             </div>
           ) : (
-            <div>
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} 
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            <>
+              <svg className="mx-auto w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
-              <p className="mt-2 text-sm text-gray-600">
-                <span className="font-medium text-blue-600 hover:text-blue-500">
-                  {t(translations, 'form.cvBrowse')}
-                </span>{' '}
-                {t(translations, 'form.cvDragDrop')}
+              <p className="text-gray-600 mb-1">
+                {translations.form.cvDragDrop}{' '}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  {translations.form.cvBrowse}
+                </button>
               </p>
-              <p id="cv-hint" className="mt-1 text-xs text-gray-500">
-                {t(translations, 'form.cvPlaceholder')}
-              </p>
-            </div>
+              <p className="text-sm text-gray-500">{translations.form.cvPlaceholder}</p>
+            </>
           )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.doc,.docx"
+            onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
+            className="hidden"
+            aria-describedby={errors.cv ? 'cv-error' : undefined}
+          />
         </div>
         {errors.cv && (
-          <p id="cv-error" className="mt-1 text-sm text-red-600" role="alert">
-            {errors.cv}
-          </p>
+          <p id="cv-error" className="mt-1 text-sm text-red-500">{errors.cv}</p>
         )}
       </div>
-
+      
       {/* Submit Error */}
       {submitError && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg" role="alert">
-          <p className="text-sm text-red-700">{submitError}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-700">{submitError}</p>
         </div>
       )}
-
+      
       {/* Submit Button */}
       <button
         type="submit"
         disabled={isSubmitting}
+        className="w-full py-3 px-6 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ 
-          backgroundColor: isSubmitting ? undefined : theme.primaryColor,
+          backgroundColor: theme.primaryColor,
           borderRadius: theme.buttonRadius 
         }}
-        className={`w-full py-3 px-6 text-white font-medium transition-all
-                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                   ${isSubmitting 
-                     ? 'bg-gray-400 cursor-not-allowed' 
-                     : 'hover:opacity-90 active:scale-[0.98]'}`}
       >
         {isSubmitting ? (
           <span className="flex items-center justify-center gap-2">
-            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            {t(translations, 'form.submitting')}
+            {translations.form.submitting}
           </span>
         ) : (
-          t(translations, 'form.submit')
+          translations.form.submit
         )}
       </button>
     </form>

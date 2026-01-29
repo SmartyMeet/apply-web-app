@@ -1,82 +1,68 @@
 import { config, SupportedLanguage } from '@/lib/config';
 import en from './locales/en.json';
 import pl from './locales/pl.json';
+import it from './locales/it.json';
 
-// Type for translation structure
-export type TranslationDict = typeof en;
+export type Translations = typeof en;
 
-// Local translations
-const translations: Record<SupportedLanguage, TranslationDict> = {
+const translations: Record<SupportedLanguage, Translations> = {
   en,
   pl,
+  it,
 };
 
-// Get translation dictionary for a language
-export function getTranslations(lang: SupportedLanguage): TranslationDict {
+export function getTranslations(lang: SupportedLanguage): Translations {
   return translations[lang] || translations[config.defaultLanguage];
 }
 
-// Helper to get nested translation value by path (e.g., "form.title")
-export function t(dict: TranslationDict, path: string): string {
-  const keys = path.split('.');
-  let result: unknown = dict;
-  
-  for (const key of keys) {
-    if (result && typeof result === 'object' && key in result) {
-      result = (result as Record<string, unknown>)[key];
-    } else {
-      console.warn(`Translation missing for path: ${path}`);
-      return path;
-    }
-  }
-  
-  return typeof result === 'string' ? result : path;
-}
-
-// Validate if language is supported
-export function isValidLanguage(lang: string): lang is SupportedLanguage {
-  return config.supportedLanguages.includes(lang as SupportedLanguage);
-}
-
-// Get language from various sources (browser-side)
 export function detectLanguage(
-  queryLang?: string | null,
-  cookieLang?: string | null,
-  acceptLang?: string | null
+  queryParam: string | null,
+  cookie: string | null,
+  acceptLanguage: string | null
 ): SupportedLanguage {
-  // 1. Query param
-  if (queryLang && isValidLanguage(queryLang)) {
-    return queryLang;
+  // Priority 1: Query parameter
+  if (queryParam && isValidLanguage(queryParam)) {
+    return queryParam as SupportedLanguage;
   }
   
-  // 2. Cookie
-  if (cookieLang && isValidLanguage(cookieLang)) {
-    return cookieLang;
+  // Priority 2: Cookie
+  if (cookie && isValidLanguage(cookie)) {
+    return cookie as SupportedLanguage;
   }
   
-  // 3. Accept-Language header
-  if (acceptLang) {
-    const preferred = acceptLang.split(',')[0]?.split('-')[0]?.toLowerCase();
-    if (preferred && isValidLanguage(preferred)) {
-      return preferred;
+  // Priority 3: Accept-Language header
+  if (acceptLanguage) {
+    const primaryLang = acceptLanguage.split(',')[0]?.split('-')[0]?.toLowerCase();
+    if (primaryLang && isValidLanguage(primaryLang)) {
+      return primaryLang as SupportedLanguage;
     }
   }
   
-  // 4. Fallback
+  // Priority 4: Default fallback
   return config.defaultLanguage;
 }
 
-// Set language cookie
-export function setLanguageCookie(lang: SupportedLanguage): void {
-  if (typeof document !== 'undefined') {
-    document.cookie = `${config.languageCookieName}=${lang};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
-  }
+function isValidLanguage(lang: string): boolean {
+  return config.supportedLanguages.includes(lang as SupportedLanguage);
 }
 
-// Get language from cookie (browser-side)
 export function getLanguageFromCookie(): string | null {
   if (typeof document === 'undefined') return null;
   
-  const match = document.cookie.match(new RegExp(`${config.languageCookieName}=([^;]+)`));
-  return match ? match[1] : null;
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === config.languageCookieName) {
+      return value;
+    }
+  }
+  return null;
+}
+
+export function setLanguageCookie(lang: SupportedLanguage): void {
+  if (typeof document === 'undefined') return;
+  
+  // Set cookie for 1 year
+  const maxAge = 365 * 24 * 60 * 60;
+  document.cookie = `${config.languageCookieName}=${lang}; path=/; max-age=${maxAge}; SameSite=Lax`;
 }

@@ -1,0 +1,44 @@
+{
+  "form": {
+    "title": "Candidati Ora",
+    "subtitle": "Compila il modulo sottostante per inviare la tua candidatura",
+    "fullName": "Nome e Cognome",
+    "fullNamePlaceholder": "Inserisci il tuo nome completo",
+    "email": "Indirizzo Email",
+    "emailPlaceholder": "tu@esempio.com",
+    "phone": "Numero di Telefono",
+    "phonePlaceholder": "+39 123 456 7890",
+    "cv": "CV / Curriculum",
+    "cvPlaceholder": "PDF, DOC o DOCX (max 10MB)",
+    "cvBrowse": "sfoglia",
+    "cvDragDrop": "Trascina e rilascia il file qui, oppure",
+    "submit": "Invia Candidatura",
+    "submitting": "Invio in corso..."
+  },
+  "validation": {
+    "required": "Questo campo è obbligatorio",
+    "invalidEmail": "Inserisci un indirizzo email valido",
+    "invalidPhone": "Inserisci un numero di telefono valido",
+    "fileRequired": "Il CV è obbligatorio",
+    "fileTooLarge": "Il file deve essere inferiore a 10MB",
+    "fileInvalidType": "Sono ammessi solo file PDF, DOC e DOCX"
+  },
+  "errors": {
+    "submitFailed": "Invio della candidatura fallito. Riprova.",
+    "networkError": "Errore di rete. Controlla la connessione e riprova.",
+    "unexpectedError": "Si è verificato un errore imprevisto. Riprova."
+  },
+  "thankYou": {
+    "title": "Candidatura Inviata!",
+    "subtitle": "Grazie per la tua candidatura",
+    "message": "Grazie per la tua candidatura. La esamineremo e ti contatteremo presto.",
+    "referenceLabel": "Numero di Riferimento",
+    "backHome": "Invia un'altra Candidatura"
+  },
+  "language": {
+    "select": "Lingua",
+    "en": "English",
+    "pl": "Polski",
+    "it": "Italiano"
+  }
+}

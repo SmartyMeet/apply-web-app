@@ -16,7 +16,7 @@ export const config = {
   
   // i18n configuration
   defaultLanguage: 'en' as const,
-  supportedLanguages: ['en', 'pl'] as const,
+  supportedLanguages: ['en', 'pl', 'it'] as const,
   languageCookieName: 'st_lang',
   
   // File upload constraints
