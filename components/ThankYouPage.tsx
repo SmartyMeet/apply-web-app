@@ -75,7 +75,7 @@ export function ThankYouPage({ tenant }: ThankYouPageProps) {
             <div className="flex items-center gap-2">
               <TenantLogo 
                 tenant={tenant}
-                className="h-[100px] sm:h-[120px]"
+                className="h-[100px] sm:h-[60px]"
                 fallbackClassName="text-2xl sm:text-3xl"
               />
             </div>
