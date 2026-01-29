@@ -121,7 +121,7 @@ export function ThankYouPage({ tenant }: ThankYouPageProps) {
                 borderRadius: theme.buttonRadius 
               }}
             >
-              {translations.thankYou.backButton}
+              {translations.thankYou.backHome}
             </Link>
           </div>
         </div>
