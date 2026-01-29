@@ -8,6 +8,7 @@ import { Theme, defaultTheme, loadTheme } from '@/lib/theme';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ApplyForm } from './ApplyForm';
 import { TenantLogo } from './TenantLogo';
+import { useTenantBackground } from './TenantBackground';
 
 interface ApplyPageProps {
   tenant: string;
@@ -42,6 +43,9 @@ export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
   // Get translations for current language
   const translations = getTranslations(language);
   
+  // Load background from CDN
+  const backgroundUrl = useTenantBackground(tenant);
+  
   // Load theme from CDN
   useEffect(() => {
     loadTheme(tenant).then((loadedTheme) => {
@@ -54,62 +58,80 @@ export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
     setLanguage(newLang);
   };
 
+  // Background styles
+  const backgroundStyles: React.CSSProperties = backgroundUrl
+    ? {
+        backgroundImage: `url(${backgroundUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+      }
+    : {
+        backgroundColor: theme.backgroundColor,
+      };
+
   return (
     <div 
-      className="min-h-screen transition-colors duration-300"
-      style={{ backgroundColor: theme.backgroundColor }}
+      className="min-h-screen transition-all duration-300"
+      style={backgroundStyles}
     >
-      {/* Header */}
-      <header className="w-full px-4 py-4 sm:px-6 lg:px-8">
-        <div className="max-w-xl mx-auto flex justify-between items-center">
-          {/* Logo/Brand - Uses TenantLogo component for CDN logo with text fallback */}
-          <div className="flex items-center gap-2">
-            <TenantLogo 
-              tenant={tenant}
-              className="h-8 sm:h-10"
-              fallbackClassName="text-xl sm:text-2xl"
-            />
-          </div>
-          
-          {/* Language Switcher */}
-          <LanguageSwitcher 
-            currentLang={language} 
-            translations={translations}
-            onLanguageChange={handleLanguageChange}
-          />
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="px-4 py-8 sm:px-6 lg:px-8">
-        <div className="max-w-xl mx-auto">
-          {/* Form Card */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-            {/* Title */}
-            <div className="text-center mb-8">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                {translations.form.title}
-              </h1>
-              <p className="text-gray-600">
-                {translations.form.subtitle}
-              </p>
+      {/* Optional overlay for better readability when background image is present */}
+      <div className={backgroundUrl ? 'min-h-screen bg-black/30' : 'min-h-screen'}>
+        {/* Header */}
+        <header className="w-full px-4 py-4 sm:px-6 lg:px-8">
+          <div className="max-w-xl mx-auto flex justify-between items-center">
+            {/* Logo/Brand - Uses TenantLogo component for CDN logo with text fallback */}
+            <div className="flex items-center gap-2">
+              <TenantLogo 
+                tenant={tenant}
+                className="h-[100px] sm:h-[120px]"
+                fallbackClassName="text-2xl sm:text-3xl"
+              />
             </div>
             
-            {/* Form */}
-            <ApplyForm 
-              tenant={tenant}
-              language={language}
+            {/* Language Switcher */}
+            <LanguageSwitcher 
+              currentLang={language} 
               translations={translations}
-              theme={theme}
+              onLanguageChange={handleLanguageChange}
             />
           </div>
-        </div>
-      </main>
+        </header>
 
-      {/* Footer */}
-      <footer className="px-4 py-6 text-center text-sm text-gray-500">
-        <p>© {new Date().getFullYear()} SmartyTalent. All rights reserved.</p>
-      </footer>
+        {/* Main Content */}
+        <main className="px-4 py-8 sm:px-6 lg:px-8">
+          <div className="max-w-xl mx-auto">
+            {/* Form Card */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-6 sm:p-8">
+              {/* Title */}
+              <div className="text-center mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                  {translations.form.title}
+                </h1>
+                <p className="text-gray-600">
+                  {translations.form.subtitle}
+                </p>
+              </div>
+              
+              {/* Form */}
+              <ApplyForm 
+                tenant={tenant}
+                language={language}
+                translations={translations}
+                theme={theme}
+              />
+            </div>
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="px-4 py-6 text-center text-sm text-gray-500">
+          <p className={backgroundUrl ? 'text-white/80' : ''}>
+            © {new Date().getFullYear()} SmartyTalent. All rights reserved.
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }

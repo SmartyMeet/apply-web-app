@@ -33,6 +33,7 @@ function getTenantLogoUrl(tenant: string): string {
  * the tenant name with first letter capitalized.
  * 
  * Logo URL pattern: https://cdn.test-smartytalent.eu/tenant/{tenantName}/logo.jpeg
+ * Minimum size: 100x100px
  */
 export function TenantLogo({ tenant, className = '', fallbackClassName = '' }: TenantLogoProps) {
   const [logoStatus, setLogoStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
@@ -71,8 +72,7 @@ export function TenantLogo({ tenant, className = '', fallbackClassName = '' }: T
     };
   }, [tenant]);
   
-  // Show text fallback while loading (to prevent flash)
-  // Or show text if logo failed to load
+  // Show text fallback while loading or if logo failed to load
   if (logoStatus === 'loading' || logoStatus === 'error') {
     return (
       <span className={`font-bold text-gray-900 ${fallbackClassName}`}>
@@ -81,14 +81,15 @@ export function TenantLogo({ tenant, className = '', fallbackClassName = '' }: T
     );
   }
   
-  // Show logo image
+  // Show logo image - minimum 100x100px
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img 
       src={logoUrl}
       alt={`${displayName} Logo`}
-      className={`w-auto ${className}`}
-      onError={() => setLogoStatus('error')} // Fallback if image fails after initial load
+      className={`w-auto object-contain ${className}`}
+      style={{ minWidth: '100px', minHeight: '100px' }}
+      onError={() => setLogoStatus('error')}
     />
   );
 }
