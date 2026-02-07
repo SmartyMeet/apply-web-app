@@ -1,8 +1,17 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { config } from './config';
 
+// Explicit credentials for Lambda — Next.js standalone bundling breaks the
+// default credential provider chain, so read the env vars Lambda injects directly.
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'us-east-1',
+  ...(process.env.AWS_ACCESS_KEY_ID && {
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      sessionToken: process.env.AWS_SESSION_TOKEN,
+    },
+  }),
 });
 
 export function buildS3Key(tenant: string, filename: string): string {
