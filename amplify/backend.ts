@@ -5,14 +5,20 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as iam from 'aws-cdk-lib/aws-iam';
 
 // Note: Data/database removed per requirements - this is a stateless apply form
-// that forwards submissions to an external API
+// that uploads CVs to S3 and emits EventBridge events
 const backend = defineBackend({
   auth,
   storage,
 });
 
-// Custom EventBridge bus for application events
+// Environment name (shared across all resources)
 const smEnv = process.env.SM_ENV || 'dev';
+
+// Override the bucket name
+const cfnBucket = backend.storage.resources.cfnResources.cfnBucket;
+cfnBucket.bucketName = `sm-${smEnv}-app-apply-bucket`;
+
+// Custom EventBridge bus for application events
 const eventsStack = backend.createStack('EventsStack');
 
 const applyEventBus = new events.EventBus(eventsStack, 'ApplyEventBus', {
