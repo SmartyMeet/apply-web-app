@@ -3,7 +3,6 @@
 export const config = {
   // API configuration
   runsApiUrl: process.env.RUNS_API_URL || process.env.NEXT_PUBLIC_RUNS_API_URL || 'https://api.test.smartytalent.eu/v1/runs',
-  s3BucketName: `sm-${process.env.SM_ENV || 'dev03'}-app-apply-bucket`,
   
   // Tenant configuration
   defaultTenant: process.env.NEXT_PUBLIC_DEFAULT_TENANT || 'default',

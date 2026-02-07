@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { config, SupportedLanguage, isValidFileType, isValidFileSize } from '@/lib/config';
 import { Translations } from '@/i18n';
 import { Theme } from '@/lib/theme';
+import { uploadCvToS3 } from '@/lib/uploadCv';
 
 interface ApplyFormProps {
   tenant: string;
@@ -120,6 +121,12 @@ export function ApplyForm({ tenant, language, translations, theme }: ApplyFormPr
     setIsSubmitting(true);
     
     try {
+      // Upload CV to S3 client-side first
+      let cvUrl = '';
+      if (formData.cv) {
+        cvUrl = await uploadCvToS3(tenant, formData.cv);
+      }
+
       const formPayload = new FormData();
       formPayload.append('tenant', tenant);
       formPayload.append('language', language);
@@ -127,10 +134,7 @@ export function ApplyForm({ tenant, language, translations, theme }: ApplyFormPr
       formPayload.append('email', formData.email);
       formPayload.append('phone', formData.phone);
       formPayload.append('sourceUrl', window.location.href);
-      
-      if (formData.cv) {
-        formPayload.append('cv', formData.cv);
-      }
+      formPayload.append('cvUrl', cvUrl);
       
       const response = await fetch('/api/runs', {
         method: 'POST',
