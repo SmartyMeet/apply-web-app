@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { config } from '@/lib/config';
+import { publishApplyEvent } from '@/lib/eventbridge';
 
 export const runtime = 'nodejs';
 
@@ -74,6 +75,11 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await upstreamResponse.json();
+
+    // Emit EventBridge event (fire-and-forget — errors are caught internally)
+    const sourceUrl = formData.get('sourceUrl') as string || '';
+    await publishApplyEvent({ tenant, language, name, email, phone, cvUrl, sourceUrl });
+
     return NextResponse.json(result);
 
   } catch (error) {
