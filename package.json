@@ -16,10 +16,13 @@
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@aws-amplify/backend": "^1.20.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.20",
+    "aws-cdk-lib": "^2.237.1",
+    "constructs": "^10.4.5",
     "eslint": "^8",
     "eslint-config-next": "14.2.10",
     "postcss": "^8.4.49",
