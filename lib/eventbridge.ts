@@ -3,9 +3,10 @@ import {
   PutEventsCommand,
 } from '@aws-sdk/client-eventbridge';
 
-const EVENT_BUS_NAME = 'sm-app-apply';
-const EVENT_SOURCE = 'sm.app.apply';
-const EVENT_DETAIL_TYPE = 'sm:app:apply:file:uploaded';
+const SM_ENV = process.env.SM_ENV || 'dev';
+const EVENT_BUS_NAME = `sm-${SM_ENV}-app-apply-eventbus`;
+const EVENT_SOURCE = `sm.${SM_ENV}.app`;
+const EVENT_DETAIL_TYPE = 'apply:file:uploaded';
 
 export interface ApplyEventDetail {
   tenant: string;

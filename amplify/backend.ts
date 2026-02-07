@@ -12,10 +12,11 @@ const backend = defineBackend({
 });
 
 // Custom EventBridge bus for application events
+const smEnv = process.env.SM_ENV || 'dev';
 const eventsStack = backend.createStack('EventsStack');
 
 const applyEventBus = new events.EventBus(eventsStack, 'ApplyEventBus', {
-  eventBusName: 'sm-app-apply',
+  eventBusName: `sm-${smEnv}-app-apply-eventbus`,
 });
 
 // Allow any principal in the same account to publish events.
