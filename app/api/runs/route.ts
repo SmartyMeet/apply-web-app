@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { config } from '@/lib/config';
-import { uploadCvToS3 } from '@/lib/s3';
 
 export const runtime = 'nodejs';
 
@@ -72,11 +71,22 @@ export async function POST(request: NextRequest) {
     // Read the file buffer once to avoid double-consuming the stream
     const cvBuffer = Buffer.from(await cv.arrayBuffer());
 
-    // Fire-and-forget S3 upload — must not block the response
-    uploadCvToS3(tenant, cv.name, cvBuffer, cv.type).then(
+    // Fire-and-forget S3 upload — dynamic import so the AWS SDK never blocks route loading
+    import('@/lib/s3').then(({ uploadCvToS3 }) =>
+      uploadCvToS3(tenant, cv.name, cvBuffer, cv.type)
+    ).then(
       (key) => console.log(`[API] CV uploaded to S3: ${key}`),
       (err) => console.error('[API] S3 upload failed (non-blocking):', err),
     );
+
+    // Mock mode: skip upstream API and return success (for dev/testing)
+    if (process.env.MOCK_UPSTREAM_API === 'true') {
+      console.log('[API] Mock mode: skipping upstream API, returning success');
+      return NextResponse.json({
+        success: true,
+        referenceId: `mock-${Date.now()}`,
+      });
+    }
 
     // Build the upstream request using a Blob from the buffer
     const cvBlob = new Blob([cvBuffer], { type: cv.type });
@@ -87,28 +97,28 @@ export async function POST(request: NextRequest) {
     upstreamFormData.append('email', email);
     upstreamFormData.append('phone', phone);
     upstreamFormData.append('cv', cvBlob, cv.name);
-    
+
     // Add metadata
     const sourceUrl = request.headers.get('referer') || request.headers.get('origin') || '';
     const userAgent = request.headers.get('user-agent') || '';
     upstreamFormData.append('sourceUrl', sourceUrl);
     upstreamFormData.append('userAgent', userAgent);
-    
+
     // Forward to upstream API
     const upstreamUrl = config.runsApiUrl;
-    
+
     console.log(`[API] Forwarding request to: ${upstreamUrl}`);
-    
+
     const upstreamResponse = await fetch(upstreamUrl, {
       method: 'POST',
       body: upstreamFormData,
       // Don't set Content-Type - let fetch set it with boundary for multipart
     });
-    
+
     // Parse upstream response
     let responseData: Record<string, unknown> = {};
     const contentType = upstreamResponse.headers.get('content-type');
-    
+
     if (contentType?.includes('application/json')) {
       try {
         responseData = await upstreamResponse.json();
@@ -116,21 +126,21 @@ export async function POST(request: NextRequest) {
         // Non-JSON response
       }
     }
-    
+
     if (!upstreamResponse.ok) {
       console.error(`[API] Upstream error: ${upstreamResponse.status}`);
       return NextResponse.json(
-        { 
+        {
           error: 'Failed to submit application',
           // Don't expose internal error details to client
         },
         { status: upstreamResponse.status >= 500 ? 502 : upstreamResponse.status }
       );
     }
-    
+
     // Extract reference ID if available
     const referenceId = responseData.id || responseData.runId || responseData.referenceId || null;
-    
+
     return NextResponse.json({
       success: true,
       referenceId,
