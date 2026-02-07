@@ -1,7 +1,9 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { config } from './config';
 
-const s3Client = new S3Client({});
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION || 'us-east-1',
+});
 
 export function buildS3Key(tenant: string, filename: string): string {
   const sanitizedTenant = tenant.replace(/[^a-zA-Z0-9_-]/g, '_');
