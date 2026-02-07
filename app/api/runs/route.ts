@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { config } from '@/lib/config';
+import { uploadCvToS3 } from '@/lib/s3';
 
 export const runtime = 'nodejs';
 
@@ -68,14 +69,24 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Build the upstream request
+    // Read the file buffer once to avoid double-consuming the stream
+    const cvBuffer = Buffer.from(await cv.arrayBuffer());
+
+    // Fire-and-forget S3 upload — must not block the response
+    uploadCvToS3(tenant, cv.name, cvBuffer, cv.type).then(
+      (key) => console.log(`[API] CV uploaded to S3: ${key}`),
+      (err) => console.error('[API] S3 upload failed (non-blocking):', err),
+    );
+
+    // Build the upstream request using a Blob from the buffer
+    const cvBlob = new Blob([cvBuffer], { type: cv.type });
     const upstreamFormData = new FormData();
     upstreamFormData.append('tenant', tenant);
     upstreamFormData.append('language', language);
     upstreamFormData.append('name', name);
     upstreamFormData.append('email', email);
     upstreamFormData.append('phone', phone);
-    upstreamFormData.append('cv', cv, cv.name);
+    upstreamFormData.append('cv', cvBlob, cv.name);
     
     // Add metadata
     const sourceUrl = request.headers.get('referer') || request.headers.get('origin') || '';
