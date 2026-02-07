@@ -145,13 +145,8 @@ export function ApplyForm({ tenant, language, translations, theme }: ApplyFormPr
         throw new Error('Submission failed');
       }
       
-      const result = await response.json();
-      
       const basePath = tenant === config.defaultTenant ? '' : `/${tenant}`;
-      const refParam = result.id || result.runId || result.referenceId;
-      const queryString = refParam ? `?ref=${refParam}` : '';
-      
-      router.push(`${basePath}/thank-you${queryString}`);
+      router.push(`${basePath}/thank-you`);
     } catch (error) {
       console.error('Submit error:', error);
       setSubmitError(translations.errors.submitFailed);

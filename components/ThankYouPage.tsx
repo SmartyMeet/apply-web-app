@@ -16,8 +16,7 @@ interface ThankYouPageProps {
 
 export function ThankYouPage({ tenant }: ThankYouPageProps) {
   const searchParams = useSearchParams();
-  const referenceId = searchParams.get('ref');
-  
+
   // Initialize language
   const [language, setLanguage] = useState<SupportedLanguage>(() => {
     if (typeof window === 'undefined') {
@@ -118,18 +117,6 @@ export function ThankYouPage({ tenant }: ThankYouPageProps) {
               <p className="text-gray-600 mb-6">
                 {translations.thankYou.message}
               </p>
-              
-              {/* Reference ID (if available) */}
-              {referenceId && (
-                <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-gray-500 mb-1">
-                    {translations.thankYou.referenceLabel}
-                  </p>
-                  <p className="font-mono text-lg font-semibold text-gray-900">
-                    {referenceId}
-                  </p>
-                </div>
-              )}
               
               {/* Back to form link */}
               <Link 

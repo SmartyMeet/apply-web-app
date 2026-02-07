@@ -1,9 +1,6 @@
 // Centralized configuration for the Candidate Apply portal
 
 export const config = {
-  // API configuration
-  runsApiUrl: process.env.RUNS_API_URL || process.env.NEXT_PUBLIC_RUNS_API_URL || 'https://api.test.smartytalent.eu/v1/runs',
-  
   // Tenant configuration
   defaultTenant: process.env.NEXT_PUBLIC_DEFAULT_TENANT || 'default',
   

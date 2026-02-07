@@ -50,37 +50,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Forward to upstream API
-    const upstreamFormData = new FormData();
-    upstreamFormData.append('tenant', tenant);
-    upstreamFormData.append('language', language);
-    upstreamFormData.append('name', name);
-    upstreamFormData.append('email', email);
-    upstreamFormData.append('phone', phone);
-    upstreamFormData.append('cvUrl', cvUrl);
-    upstreamFormData.append('sourceUrl', formData.get('sourceUrl') as string || '');
-
-    const upstreamResponse = await fetch(config.runsApiUrl, {
-      method: 'POST',
-      body: upstreamFormData,
-    });
-
-    if (!upstreamResponse.ok) {
-      const errorText = await upstreamResponse.text();
-      console.error('[API] Upstream error:', upstreamResponse.status, errorText);
-      return NextResponse.json(
-        { error: 'Failed to submit application' },
-        { status: upstreamResponse.status }
-      );
-    }
-
-    const result = await upstreamResponse.json();
-
-    // Emit EventBridge event (fire-and-forget — errors are caught internally)
+    // Emit EventBridge event
     const sourceUrl = formData.get('sourceUrl') as string || '';
     await publishApplyEvent({ tenant, language, name, email, phone, cvUrl, sourceUrl });
 
-    return NextResponse.json(result);
+    return NextResponse.json({ success: true });
 
   } catch (error) {
     console.error('[API] Error processing request:', error);
