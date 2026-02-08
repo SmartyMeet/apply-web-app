@@ -50,9 +50,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Emit EventBridge event
+    // Tracking data from URL parameters
     const sourceUrl = formData.get('sourceUrl') as string || '';
-    await publishApplyEvent({ tenant, language, name, email, phone, cvUrl, sourceUrl });
+    const referrer = formData.get('referrer') as string || '';
+    const landingUrl = formData.get('landingUrl') as string || '';
+    const urlParamsRaw = formData.get('urlParams') as string || '{}';
+    let urlParams: Record<string, string> = {};
+    try {
+      urlParams = JSON.parse(urlParamsRaw);
+    } catch {
+      urlParams = {};
+    }
+
+    // Emit EventBridge event
+    await publishApplyEvent({ tenant, language, name, email, phone, cvUrl, sourceUrl, referrer, landingUrl, urlParams });
 
     return NextResponse.json({ success: true });
 

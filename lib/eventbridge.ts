@@ -16,6 +16,9 @@ export interface ApplyEventDetail {
   phone: string;
   cvUrl: string;
   sourceUrl: string;
+  referrer: string;
+  landingUrl: string;
+  urlParams: Record<string, string>;
 }
 
 let client: EventBridgeClient | null = null;

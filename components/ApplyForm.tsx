@@ -6,12 +6,14 @@ import { config, SupportedLanguage, isValidFileType, isValidFileSize } from '@/l
 import { Translations } from '@/i18n';
 import { Theme } from '@/lib/theme';
 import { uploadCvToS3 } from '@/lib/uploadCv';
+import { UrlTrackingData } from './ApplyPage';
 
 interface ApplyFormProps {
   tenant: string;
   language: SupportedLanguage;
   translations: Translations;
   theme: Theme;
+  trackingData: UrlTrackingData | null;
 }
 
 interface FormData {
@@ -28,7 +30,7 @@ interface FormErrors {
   cv?: string;
 }
 
-export function ApplyForm({ tenant, language, translations, theme }: ApplyFormProps) {
+export function ApplyForm({ tenant, language, translations, theme, trackingData }: ApplyFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -135,6 +137,11 @@ export function ApplyForm({ tenant, language, translations, theme }: ApplyFormPr
       formPayload.append('phone', formData.phone);
       formPayload.append('sourceUrl', window.location.href);
       formPayload.append('cvUrl', cvUrl);
+      if (trackingData) {
+        formPayload.append('referrer', trackingData.referrer);
+        formPayload.append('landingUrl', trackingData.landingUrl);
+        formPayload.append('urlParams', JSON.stringify(trackingData.params));
+      }
       
       const response = await fetch('/api/runs', {
         method: 'POST',

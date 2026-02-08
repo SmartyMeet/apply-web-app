@@ -10,6 +10,12 @@ import { ApplyForm } from './ApplyForm';
 import { TenantLogo } from './TenantLogo';
 import { useTenantBackground } from './TenantBackground';
 
+export interface UrlTrackingData {
+  referrer: string;
+  params: Record<string, string>;
+  landingUrl: string;
+}
+
 interface ApplyPageProps {
   tenant: string;
   initialLanguage?: SupportedLanguage;
@@ -17,7 +23,23 @@ interface ApplyPageProps {
 
 export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
   const searchParams = useSearchParams();
-  
+
+  // Capture URL parameters and referrer on initial load
+  const [trackingData, setTrackingData] = useState<UrlTrackingData | null>(null);
+
+  useEffect(() => {
+    const params: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      params[key] = value;
+    });
+
+    setTrackingData({
+      referrer: document.referrer || '(direct)',
+      params,
+      landingUrl: window.location.href,
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Initialize language from various sources
   const [language, setLanguage] = useState<SupportedLanguage>(() => {
     if (typeof window === 'undefined') {
@@ -115,15 +137,53 @@ export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
               </div>
               
               {/* Form */}
-              <ApplyForm 
+              <ApplyForm
                 tenant={tenant}
                 language={language}
                 translations={translations}
                 theme={theme}
+                trackingData={trackingData}
               />
             </div>
           </div>
         </main>
+
+        {/* Debug: URL Tracking Data */}
+        {trackingData && (
+          <div className="px-4 sm:px-6 lg:px-8 pb-4">
+            <div className="max-w-xl mx-auto">
+              <details className="bg-yellow-50 border border-yellow-300 rounded-lg overflow-hidden">
+                <summary className="px-4 py-2 cursor-pointer text-sm font-medium text-yellow-800 hover:bg-yellow-100">
+                  [DEBUG] URL Tracking Data
+                </summary>
+                <div className="px-4 pb-4 text-sm text-yellow-900 space-y-3">
+                  <div>
+                    <span className="font-semibold">Referrer:</span>{' '}
+                    <span className="font-mono break-all">{trackingData.referrer}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold">Landing URL:</span>{' '}
+                    <span className="font-mono break-all">{trackingData.landingUrl}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold">URL Parameters:</span>
+                    {Object.keys(trackingData.params).length === 0 ? (
+                      <span className="text-yellow-600 ml-1">(none)</span>
+                    ) : (
+                      <ul className="mt-1 ml-4 list-disc">
+                        {Object.entries(trackingData.params).map(([key, value]) => (
+                          <li key={key}>
+                            <span className="font-mono">{key}</span> = <span className="font-mono">{value}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <footer className="px-4 py-6 text-center text-sm text-gray-500">
