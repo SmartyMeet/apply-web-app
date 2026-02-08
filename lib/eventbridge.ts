@@ -14,7 +14,7 @@ export interface ApplyEventDetail {
   name: string;
   email: string;
   phone: string;
-  cvUrl: string;
+  files: Array<{ fileUrl: string; originalFilename: string }>;
   sourceUrl: string;
   referrer: string;
   landingUrl: string;

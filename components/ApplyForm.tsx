@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { config, SupportedLanguage, isValidFileType, isValidFileSize } from '@/lib/config';
 import { Translations } from '@/i18n';
 import { Theme } from '@/lib/theme';
-import { uploadCvToS3 } from '@/lib/uploadCv';
+import { uploadFileToS3, UploadedFile } from '@/lib/upload';
 import { UrlTrackingData } from './ApplyPage';
 
 interface ApplyFormProps {
@@ -124,10 +124,11 @@ export function ApplyForm({ tenant, language, translations, theme, trackingData,
     setIsSubmitting(true);
     
     try {
-      // Upload CV to S3 client-side first
-      let cvUrl = '';
+      // Upload files to S3 client-side first
+      const files: UploadedFile[] = [];
       if (formData.cv) {
-        cvUrl = await uploadCvToS3(tenant, formData.cv);
+        const result = await uploadFileToS3(tenant, formData.cv);
+        files.push(result);
       }
 
       const formPayload = new FormData();
@@ -137,7 +138,7 @@ export function ApplyForm({ tenant, language, translations, theme, trackingData,
       formPayload.append('email', formData.email);
       formPayload.append('phone', formData.phone);
       formPayload.append('sourceUrl', window.location.href);
-      formPayload.append('cvUrl', cvUrl);
+      formPayload.append('files', JSON.stringify(files));
       formPayload.append('sourceJobId', sourceJobId || '');
       if (trackingData) {
         formPayload.append('referrer', trackingData.referrer);

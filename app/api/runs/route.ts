@@ -15,7 +15,13 @@ export async function POST(request: NextRequest) {
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
     const phone = formData.get('phone') as string;
-    const cvUrl = formData.get('cvUrl') as string;
+    const filesRaw = formData.get('files') as string || '[]';
+    let files: Array<{ fileUrl: string; originalFilename: string }> = [];
+    try {
+      files = JSON.parse(filesRaw);
+    } catch {
+      files = [];
+    }
 
     // Server-side validation
     if (!name || !email || !phone) {
@@ -43,9 +49,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!cvUrl) {
+    if (files.length === 0 || !files[0]?.fileUrl) {
       return NextResponse.json(
-        { error: 'CV upload path is required' },
+        { error: 'At least one file upload is required' },
         { status: 400 }
       );
     }
@@ -64,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Emit EventBridge event
-    await publishApplyEvent({ tenant, language, name, email, phone, cvUrl, sourceUrl, sourceJobId, referrer, landingUrl, urlParams });
+    await publishApplyEvent({ tenant, language, name, email, phone, files, sourceUrl, sourceJobId, referrer, landingUrl, urlParams });
 
     return NextResponse.json({ success: true });
 
