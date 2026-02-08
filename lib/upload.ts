@@ -17,7 +17,7 @@ function buildS3Path(tenant: string, extension: string): string {
   const y = now.getUTCFullYear();
   const m = String(now.getUTCMonth() + 1).padStart(2, '0');
   const d = String(now.getUTCDate()).padStart(2, '0');
-  return `tenantName=${t}/year=${y}/month=${m}/day=${d}/${uuidHex()}${extension}`;
+  return `uploads/tenantName=${t}/year=${y}/month=${m}/day=${d}/${uuidHex()}${extension}`;
 }
 
 export interface UploadedFile {
