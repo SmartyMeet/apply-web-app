@@ -10,7 +10,13 @@ import { NextRequest, NextResponse } from 'next/server';
  * tracking params to the redirect URL.
  */
 export function middleware(request: NextRequest) {
-  const { searchParams, href } = request.nextUrl;
+  const { searchParams, pathname, search } = request.nextUrl;
+
+  // Reconstruct the public-facing URL using the Host / X-Forwarded-Host header
+  // instead of request.nextUrl.href which returns the internal localhost URL on Amplify.
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || request.nextUrl.host;
+  const protocol = request.headers.get('x-forwarded-proto') || 'https';
+  const publicUrl = `${protocol}://${host}${pathname}${search}`;
 
   // Capture the Referer header server-side — this is the full URL the user
   // came from (e.g. the Indeed job page). document.referrer on the client
@@ -19,7 +25,7 @@ export function middleware(request: NextRequest) {
 
   // Log every page hit so we can see exactly what URL arrives from job boards
   console.log('[Middleware] Incoming request:', {
-    url: href,
+    url: publicUrl,
     referer: referer || '(none)',
     params: searchParams.toString() || '(none)',
     userAgent: request.headers.get('user-agent')?.substring(0, 80),
@@ -37,7 +43,7 @@ export function middleware(request: NextRequest) {
 
   const trackingPayload = JSON.stringify({
     params,
-    landingUrl: href,
+    landingUrl: publicUrl,
     referer,
     capturedAt: Date.now(),
   });
