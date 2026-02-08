@@ -5,11 +5,11 @@ import { config } from '@/lib/config';
 
 /**
  * Build the CDN background URL for a tenant
- * Pattern: https://cdn.test-smartytalent.eu/tenant/{tenantName}/bg.jpg
+ * Pattern: {cdnBaseUrl}/tenants/{tenantName}/apply/bg.jpg
  */
 function getTenantBackgroundUrl(tenant: string): string {
   const baseUrl = config.cdnBaseUrl;
-  return `${baseUrl}/tenant/${tenant}/bg.jpg`;
+  return `${baseUrl}/tenants/${tenant}/apply/bg.jpg`;
 }
 
 /**

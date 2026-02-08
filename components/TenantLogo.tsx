@@ -19,11 +19,11 @@ function capitalizeFirst(str: string): string {
 
 /**
  * Build the CDN logo URL for a tenant
- * Pattern: https://cdn.test-smartytalent.eu/tenant/{tenantName}/logo.jpg
+ * Pattern: {cdnBaseUrl}/tenants/{tenantName}/apply/logo.jpg
  */
 function getTenantLogoUrl(tenant: string): string {
   const baseUrl = config.cdnBaseUrl;
-  return `${baseUrl}/tenant/${tenant}/logo.jpg`;
+  return `${baseUrl}/tenants/${tenant}/apply/logo.jpg`;
 }
 
 /**
@@ -32,7 +32,7 @@ function getTenantLogoUrl(tenant: string): string {
  * Displays tenant logo from CDN if available, otherwise shows
  * the tenant name with first letter capitalized.
  * 
- * Logo URL pattern: https://cdn.test-smartytalent.eu/tenant/{tenantName}/logo.jpg
+ * Logo URL pattern: {cdnBaseUrl}/tenants/{tenantName}/apply/logo.jpg
  * Minimum size: 100x100px
  */
 export function TenantLogo({ tenant, className = '', fallbackClassName = '' }: TenantLogoProps) {
