@@ -4,12 +4,8 @@ export const config = {
   // Tenant configuration
   defaultTenant: process.env.NEXT_PUBLIC_DEFAULT_TENANT || 'default',
   
-  // Theme/CDN configuration
-  themeBaseUrl: process.env.NEXT_PUBLIC_THEME_BASE_URL || '',
-  
-  // CDN base URL for tenant logos
-  // Logo pattern: {cdnBaseUrl}/tenant/{tenantName}/logo.jpg
-  cdnBaseUrl: process.env.NEXT_PUBLIC_CDN_BASE_URL || 'https://cdn.test-smartytalent.eu',
+  // CDN base URL for themes, logos, and backgrounds
+  cdnBaseUrl: process.env.NEXT_PUBLIC_CDN_BASE_URL || 'https://cdn.smartytalent.eu',
   
   // i18n configuration
   defaultLanguage: 'en' as const,

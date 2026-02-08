@@ -89,7 +89,7 @@ async function fetchThemeFromUrl(url: string): Promise<Partial<Theme> | null> {
 
 // Load theme with cascading fallbacks
 export async function loadTheme(tenant?: string): Promise<Theme> {
-  const baseUrl = config.themeBaseUrl;
+  const baseUrl = config.cdnBaseUrl;
   
   // Try tenant-specific theme first
   if (tenant && tenant !== 'default') {
