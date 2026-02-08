@@ -5,7 +5,7 @@ export const config = {
   defaultTenant: process.env.NEXT_PUBLIC_DEFAULT_TENANT || 'default',
   
   // Theme/CDN configuration
-  themeBaseUrl: process.env.NEXT_PUBLIC_THEME_BASE_URL || 'https://sm-dev03-tb-core-cdn-bucket.s3.us-east-1.amazonaws.com',
+  themeBaseUrl: process.env.NEXT_PUBLIC_THEME_BASE_URL || '',
   
   // CDN base URL for tenant logos
   // Logo pattern: {cdnBaseUrl}/tenant/{tenantName}/logo.jpg
