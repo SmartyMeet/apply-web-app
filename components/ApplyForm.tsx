@@ -22,6 +22,8 @@ interface FormData {
   email: string;
   phone: string;
   cv: File | null;
+  consentCurrent: boolean;
+  consentFuture: boolean;
 }
 
 interface FormErrors {
@@ -29,6 +31,7 @@ interface FormErrors {
   email?: string;
   phone?: string;
   cv?: string;
+  consentCurrent?: string;
 }
 
 export function ApplyForm({ tenant, language, translations, theme, trackingData, sourceJobId }: ApplyFormProps) {
@@ -40,6 +43,8 @@ export function ApplyForm({ tenant, language, translations, theme, trackingData,
     email: '',
     phone: '',
     cv: null,
+    consentCurrent: false,
+    consentFuture: false,
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
@@ -84,7 +89,11 @@ export function ApplyForm({ tenant, language, translations, theme, trackingData,
     } else if (!isValidFileSize(formData.cv)) {
       newErrors.cv = translations.validation.fileTooLarge;
     }
-    
+
+    if (!formData.consentCurrent) {
+      newErrors.consentCurrent = translations.validation.consentRequired;
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -139,6 +148,8 @@ export function ApplyForm({ tenant, language, translations, theme, trackingData,
       formPayload.append('phone', formData.phone);
       formPayload.append('sourceUrl', window.location.href);
       formPayload.append('files', JSON.stringify(files));
+      formPayload.append('consentCurrent', String(formData.consentCurrent));
+      formPayload.append('consentFuture', String(formData.consentFuture));
       formPayload.append('sourceJobId', sourceJobId || '');
       if (trackingData) {
         formPayload.append('referrer', trackingData.referrer);
@@ -295,6 +306,38 @@ export function ApplyForm({ tenant, language, translations, theme, trackingData,
         )}
       </div>
       
+      {/* Consent Checkboxes */}
+      <div className="space-y-3">
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="consentCurrent"
+            checked={formData.consentCurrent}
+            onChange={(e) => setFormData(prev => ({ ...prev, consentCurrent: e.target.checked }))}
+            className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <label htmlFor="consentCurrent" className="text-sm text-gray-600">
+            {translations.form.consentCurrent} <span className="text-red-500">*</span>
+          </label>
+        </div>
+        {errors.consentCurrent && (
+          <p className="text-sm text-red-500 ml-7">{errors.consentCurrent}</p>
+        )}
+
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="consentFuture"
+            checked={formData.consentFuture}
+            onChange={(e) => setFormData(prev => ({ ...prev, consentFuture: e.target.checked }))}
+            className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <label htmlFor="consentFuture" className="text-sm text-gray-600">
+            {translations.form.consentFuture}
+          </label>
+        </div>
+      </div>
+
       {/* Submit Error */}
       {submitError && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">

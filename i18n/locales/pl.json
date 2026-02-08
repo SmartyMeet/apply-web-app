@@ -12,6 +12,8 @@
     "cvPlaceholder": "PDF, DOC, DOCX i inne formaty (maks. 10MB)",
     "cvBrowse": "Wybierz plik",
     "cvDragDrop": "lub przeciągnij i upuść tutaj",
+    "consentCurrent": "Wyrażam zgodę na przetwarzanie moich danych osobowych na potrzeby tego procesu rekrutacyjnego.",
+    "consentFuture": "Wyrażam zgodę na przetwarzanie moich danych osobowych na potrzeby przyszłych procesów rekrutacyjnych.",
     "submit": "Wyślij aplikację",
     "submitting": "Wysyłanie..."
   },
@@ -20,6 +22,7 @@
     "invalidEmail": "Wpisz poprawny adres e-mail",
     "invalidPhone": "Wpisz poprawny numer telefonu",
     "fileRequired": "Prześlij swoje CV",
+    "consentRequired": "Musisz wyrazić zgodę, aby kontynuować",
     "fileTooLarge": "Rozmiar pliku musi być mniejszy niż 10MB",
     "fileInvalidType": "Nieobsługiwany format pliku. Spróbuj PDF, DOC, DOCX lub inne popularne formaty"
   },

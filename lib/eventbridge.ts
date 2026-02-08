@@ -15,6 +15,8 @@ export interface ApplyEventDetail {
   email: string;
   phone: string;
   files: Array<{ fileUrl: string; originalFilename: string }>;
+  consentCurrent: boolean;
+  consentFuture: boolean;
   sourceUrl: string;
   referrer: string;
   landingUrl: string;

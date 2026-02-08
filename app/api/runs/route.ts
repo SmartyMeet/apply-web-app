@@ -56,6 +56,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Consent
+    const consentCurrent = formData.get('consentCurrent') === 'true';
+    const consentFuture = formData.get('consentFuture') === 'true';
+
     // Tracking data from URL parameters
     const sourceUrl = formData.get('sourceUrl') as string || '';
     const sourceJobId = formData.get('sourceJobId') as string || '';
@@ -70,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Emit EventBridge event
-    await publishApplyEvent({ tenant, language, name, email, phone, files, sourceUrl, sourceJobId, referrer, landingUrl, urlParams });
+    await publishApplyEvent({ tenant, language, name, email, phone, files, consentCurrent, consentFuture, sourceUrl, sourceJobId, referrer, landingUrl, urlParams });
 
     return NextResponse.json({ success: true });
 

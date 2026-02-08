@@ -12,6 +12,8 @@
     "cvPlaceholder": "PDF, DOC, DOCX and other formats (max 10MB)",
     "cvBrowse": "Browse files",
     "cvDragDrop": "or drag and drop here",
+    "consentCurrent": "I agree to the processing of my personal data for the purpose of this recruitment process.",
+    "consentFuture": "I agree to the processing of my personal data for future recruitment processes.",
     "submit": "Submit Application",
     "submitting": "Submitting..."
   },
@@ -20,6 +22,7 @@
     "invalidEmail": "Please enter a valid email address",
     "invalidPhone": "Please enter a valid phone number",
     "fileRequired": "Please upload your CV",
+    "consentRequired": "You must agree to proceed",
     "fileTooLarge": "File size must be less than 10MB",
     "fileInvalidType": "Unsupported file format. Try PDF, DOC, DOCX or other common formats"
   },
