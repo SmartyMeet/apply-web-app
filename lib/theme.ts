@@ -19,35 +19,45 @@ export const defaultTheme: Theme = {
   buttonRadius: '0.5rem',
 };
 
-// Validate theme JSON structure
+// Validate and map theme JSON structure.
+// Supports both the CDN customizer format ({ customizer: { primaryColor, ... } })
+// and flat format ({ primaryColor, ... }).
 function validateTheme(data: unknown): Partial<Theme> {
   if (!data || typeof data !== 'object') {
     return {};
   }
-  
+
+  // Unwrap customizer envelope if present
+  const raw = data as Record<string, unknown>;
+  const obj = (raw.customizer && typeof raw.customizer === 'object'
+    ? raw.customizer
+    : raw) as Record<string, unknown>;
+
   const theme: Partial<Theme> = {};
-  const obj = data as Record<string, unknown>;
-  
-  // Validate each field
+  const isColor = (v: unknown): v is string =>
+    typeof v === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(v);
+
   if (typeof obj.logoUrl === 'string' && obj.logoUrl.startsWith('http')) {
     theme.logoUrl = obj.logoUrl;
   }
   if (typeof obj.brandName === 'string' && obj.brandName.length < 100) {
     theme.brandName = obj.brandName;
   }
-  if (typeof obj.primaryColor === 'string' && /^#[0-9a-fA-F]{6}$/.test(obj.primaryColor)) {
+  if (isColor(obj.primaryColor)) {
     theme.primaryColor = obj.primaryColor;
   }
-  if (typeof obj.secondaryColor === 'string' && /^#[0-9a-fA-F]{6}$/.test(obj.secondaryColor)) {
+  if (isColor(obj.secondaryColor)) {
     theme.secondaryColor = obj.secondaryColor;
   }
-  if (typeof obj.backgroundColor === 'string' && /^#[0-9a-fA-F]{6}$/.test(obj.backgroundColor)) {
+  if (isColor(obj.lightBackgroundColor)) {
+    theme.backgroundColor = obj.lightBackgroundColor;
+  } else if (isColor(obj.backgroundColor)) {
     theme.backgroundColor = obj.backgroundColor;
   }
   if (typeof obj.buttonRadius === 'string' && obj.buttonRadius.length < 20) {
     theme.buttonRadius = obj.buttonRadius;
   }
-  
+
   return theme;
 }
 
@@ -91,8 +101,8 @@ export async function loadTheme(tenant?: string): Promise<Theme> {
     }
   }
   
-  // Try global theme
-  const globalTheme = await fetchThemeFromUrl(`${baseUrl}/apply/theme.json`);
+  // Try default theme (smartytalent)
+  const globalTheme = await fetchThemeFromUrl(`${baseUrl}/tenants/smartytalent/apply/theme.json`);
   if (globalTheme && Object.keys(globalTheme).length > 0) {
     return { ...defaultTheme, ...globalTheme };
   }
