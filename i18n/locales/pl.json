@@ -9,7 +9,7 @@
     "phone": "Numer telefonu",
     "phonePlaceholder": "+48 123 456 789",
     "cv": "CV / Życiorys",
-    "cvPlaceholder": "Prześlij swoje CV (PDF, DOC, DOCX - maks. 10MB)",
+    "cvPlaceholder": "PDF, DOC, DOCX i inne formaty (maks. 10MB)",
     "cvBrowse": "Wybierz plik",
     "cvDragDrop": "lub przeciągnij i upuść tutaj",
     "submit": "Wyślij aplikację",
@@ -21,7 +21,7 @@
     "invalidPhone": "Wpisz poprawny numer telefonu",
     "fileRequired": "Prześlij swoje CV",
     "fileTooLarge": "Rozmiar pliku musi być mniejszy niż 10MB",
-    "fileInvalidType": "Dozwolone są tylko pliki PDF, DOC i DOCX"
+    "fileInvalidType": "Nieobsługiwany format pliku. Spróbuj PDF, DOC, DOCX lub inne popularne formaty"
   },
   "errors": {
     "submitFailed": "Nie udało się wysłać aplikacji. Spróbuj ponownie.",

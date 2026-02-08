@@ -9,7 +9,7 @@
     "phone": "Phone Number",
     "phonePlaceholder": "+1 234 567 8900",
     "cv": "CV / Resume",
-    "cvPlaceholder": "Upload your CV (PDF, DOC, DOCX - max 10MB)",
+    "cvPlaceholder": "PDF, DOC, DOCX and other formats (max 10MB)",
     "cvBrowse": "Browse files",
     "cvDragDrop": "or drag and drop here",
     "submit": "Submit Application",
@@ -21,7 +21,7 @@
     "invalidPhone": "Please enter a valid phone number",
     "fileRequired": "Please upload your CV",
     "fileTooLarge": "File size must be less than 10MB",
-    "fileInvalidType": "Only PDF, DOC, and DOCX files are allowed"
+    "fileInvalidType": "Unsupported file format. Try PDF, DOC, DOCX or other common formats"
   },
   "errors": {
     "submitFailed": "Failed to submit your application. Please try again.",

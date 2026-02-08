@@ -284,7 +284,7 @@ export function ApplyForm({ tenant, language, translations, theme, trackingData,
           <input
             ref={fileInputRef}
             type="file"
-            accept=".pdf,.doc,.docx"
+            accept=".pdf,.doc,.docx,.txt,.rtf,.ppt,.pptx,.pages,.png,.jpg,.jpeg"
             onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
             className="hidden"
             aria-describedby={errors.cv ? 'cv-error' : undefined}

@@ -19,11 +19,29 @@ export const config = {
   // File upload constraints
   maxFileSize: 10 * 1024 * 1024, // 10MB
   allowedFileTypes: [
+    // Documents
     'application/pdf',
     'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain',
+    'text/rtf',
+    'application/rtf',
+    // Presentations
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    // Apple Pages
+    'application/x-iwork-pages-sffpages',
+    // Images
+    'image/png',
+    'image/jpeg',
   ] as string[],
-  allowedFileExtensions: ['.pdf', '.doc', '.docx'] as string[],
+  allowedFileExtensions: [
+    '.pdf', '.doc', '.docx',
+    '.txt', '.rtf',
+    '.ppt', '.pptx',
+    '.pages',
+    '.png', '.jpg', '.jpeg',
+  ] as string[],
 };
 
 export type SupportedLanguage = typeof config.supportedLanguages[number];

@@ -9,7 +9,7 @@
     "phone": "Numero di Telefono",
     "phonePlaceholder": "+39 123 456 7890",
     "cv": "CV / Curriculum",
-    "cvPlaceholder": "PDF, DOC o DOCX (max 10MB)",
+    "cvPlaceholder": "PDF, DOC, DOCX e altri formati (max 10MB)",
     "cvBrowse": "sfoglia",
     "cvDragDrop": "Trascina e rilascia il file qui, oppure",
     "submit": "Invia Candidatura",
@@ -21,7 +21,7 @@
     "invalidPhone": "Inserisci un numero di telefono valido",
     "fileRequired": "Il CV è obbligatorio",
     "fileTooLarge": "Il file deve essere inferiore a 10MB",
-    "fileInvalidType": "Sono ammessi solo file PDF, DOC e DOCX"
+    "fileInvalidType": "Formato file non supportato. Prova PDF, DOC, DOCX o altri formati comuni"
   },
   "errors": {
     "submitFailed": "Invio della candidatura fallito. Riprova.",
