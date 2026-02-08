@@ -14,6 +14,7 @@ interface ApplyFormProps {
   translations: Translations;
   theme: Theme;
   trackingData: UrlTrackingData | null;
+  sourceJobId?: string;
 }
 
 interface FormData {
@@ -30,7 +31,7 @@ interface FormErrors {
   cv?: string;
 }
 
-export function ApplyForm({ tenant, language, translations, theme, trackingData }: ApplyFormProps) {
+export function ApplyForm({ tenant, language, translations, theme, trackingData, sourceJobId }: ApplyFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -137,6 +138,7 @@ export function ApplyForm({ tenant, language, translations, theme, trackingData 
       formPayload.append('phone', formData.phone);
       formPayload.append('sourceUrl', window.location.href);
       formPayload.append('cvUrl', cvUrl);
+      formPayload.append('sourceJobId', sourceJobId || '');
       if (trackingData) {
         formPayload.append('referrer', trackingData.referrer);
         formPayload.append('landingUrl', trackingData.landingUrl);

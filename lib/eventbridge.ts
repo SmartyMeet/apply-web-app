@@ -19,6 +19,7 @@ export interface ApplyEventDetail {
   referrer: string;
   landingUrl: string;
   urlParams: Record<string, string>;
+  sourceJobId: string;
 }
 
 let client: EventBridgeClient | null = null;

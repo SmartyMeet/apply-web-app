@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
 
     // Tracking data from URL parameters
     const sourceUrl = formData.get('sourceUrl') as string || '';
+    const sourceJobId = formData.get('sourceJobId') as string || '';
     const referrer = formData.get('referrer') as string || '';
     const landingUrl = formData.get('landingUrl') as string || '';
     const urlParamsRaw = formData.get('urlParams') as string || '{}';
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Emit EventBridge event
-    await publishApplyEvent({ tenant, language, name, email, phone, cvUrl, sourceUrl, referrer, landingUrl, urlParams });
+    await publishApplyEvent({ tenant, language, name, email, phone, cvUrl, sourceUrl, sourceJobId, referrer, landingUrl, urlParams });
 
     return NextResponse.json({ success: true });
 

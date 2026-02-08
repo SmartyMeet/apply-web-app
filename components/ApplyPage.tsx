@@ -20,10 +20,11 @@ export interface UrlTrackingData {
 
 interface ApplyPageProps {
   tenant: string;
+  sourceJobId?: string;
   initialLanguage?: SupportedLanguage;
 }
 
-export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
+export function ApplyPage({ tenant, sourceJobId, initialLanguage }: ApplyPageProps) {
   const searchParams = useSearchParams();
 
   // Capture URL parameters and referrer on initial load.
@@ -182,6 +183,7 @@ export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
                 translations={translations}
                 theme={theme}
                 trackingData={trackingData}
+                sourceJobId={sourceJobId}
               />
             </div>
           </div>
@@ -196,6 +198,12 @@ export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
                   [DEBUG] URL Tracking Data
                 </summary>
                 <div className="px-4 pb-4 text-sm text-yellow-900 space-y-3">
+                  {sourceJobId && (
+                    <div>
+                      <span className="font-semibold">Source Job ID:</span>{' '}
+                      <span className="font-mono">{sourceJobId}</span>
+                    </div>
+                  )}
                   <div>
                     <span className="font-semibold">Referrer:</span>{' '}
                     <span className="font-mono break-all">{trackingData.referrer}</span>
