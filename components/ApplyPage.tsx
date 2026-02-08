@@ -14,6 +14,8 @@ export interface UrlTrackingData {
   referrer: string;
   params: Record<string, string>;
   landingUrl: string;
+  redirectCount?: number;
+  navigationType?: string;
 }
 
 interface ApplyPageProps {
@@ -33,6 +35,11 @@ export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
   useEffect(() => {
     const referrer = document.referrer || '(direct)';
 
+    // Get navigation performance data (redirect count, type)
+    const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    const redirectCount = navEntry?.redirectCount ?? 0;
+    const navigationType = navEntry?.type ?? 'unknown';
+
     // Try reading the middleware cookie first
     const cookieMatch = document.cookie
       .split('; ')
@@ -46,6 +53,8 @@ export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
           referrer: payload.referer || referrer,
           params: payload.params || {},
           landingUrl: payload.landingUrl || window.location.href,
+          redirectCount,
+          navigationType,
         });
         // Clear the cookie so it doesn't leak into subsequent navigations
         document.cookie = 'st_tracking=; path=/; max-age=0';
@@ -65,6 +74,8 @@ export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
       referrer,
       params,
       landingUrl: window.location.href,
+      redirectCount,
+      navigationType,
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -192,6 +203,13 @@ export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
                   <div>
                     <span className="font-semibold">Landing URL:</span>{' '}
                     <span className="font-mono break-all">{trackingData.landingUrl}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold">Navigation type:</span>{' '}
+                    <span className="font-mono">{trackingData.navigationType}</span>
+                    {' | '}
+                    <span className="font-semibold">Redirects:</span>{' '}
+                    <span className="font-mono">{trackingData.redirectCount}</span>
                   </div>
                   <div>
                     <span className="font-semibold">URL Parameters:</span>

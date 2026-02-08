@@ -17,6 +17,14 @@ export function middleware(request: NextRequest) {
   // may be truncated by referrer policies.
   const referer = request.headers.get('referer') || '';
 
+  // Log every page hit so we can see exactly what URL arrives from job boards
+  console.log('[Middleware] Incoming request:', {
+    url: href,
+    referer: referer || '(none)',
+    params: searchParams.toString() || '(none)',
+    userAgent: request.headers.get('user-agent')?.substring(0, 80),
+  });
+
   // If there are no query params AND no referer, nothing to capture
   if (searchParams.toString().length === 0 && !referer) {
     return NextResponse.next();
