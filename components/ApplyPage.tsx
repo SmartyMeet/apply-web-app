@@ -24,17 +24,45 @@ interface ApplyPageProps {
 export function ApplyPage({ tenant, initialLanguage }: ApplyPageProps) {
   const searchParams = useSearchParams();
 
-  // Capture URL parameters and referrer on initial load
+  // Capture URL parameters and referrer on initial load.
+  // Primary source: st_tracking cookie set by middleware (captures the original
+  // server-side URL before Next.js routing can strip query params).
+  // Fallback: useSearchParams (works when params survive to the client).
   const [trackingData, setTrackingData] = useState<UrlTrackingData | null>(null);
 
   useEffect(() => {
+    const referrer = document.referrer || '(direct)';
+
+    // Try reading the middleware cookie first
+    const cookieMatch = document.cookie
+      .split('; ')
+      .find((c) => c.startsWith('st_tracking='));
+
+    if (cookieMatch) {
+      try {
+        const payload = JSON.parse(decodeURIComponent(cookieMatch.split('=').slice(1).join('=')));
+        setTrackingData({
+          // Prefer server-side referer (full URL), fall back to client-side
+          referrer: payload.referer || referrer,
+          params: payload.params || {},
+          landingUrl: payload.landingUrl || window.location.href,
+        });
+        // Clear the cookie so it doesn't leak into subsequent navigations
+        document.cookie = 'st_tracking=; path=/; max-age=0';
+        return;
+      } catch {
+        // Malformed cookie — fall through to client-side detection
+      }
+    }
+
+    // Fallback: read from current URL (works when params are still present)
     const params: Record<string, string> = {};
     searchParams.forEach((value, key) => {
       params[key] = value;
     });
 
     setTrackingData({
-      referrer: document.referrer || '(direct)',
+      referrer,
       params,
       landingUrl: window.location.href,
     });
