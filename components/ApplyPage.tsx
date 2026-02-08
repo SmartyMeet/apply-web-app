@@ -80,24 +80,23 @@ export function ApplyPage({ tenant, sourceJobId, initialLanguage }: ApplyPagePro
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Initialize language from various sources
-  const [language, setLanguage] = useState<SupportedLanguage>(() => {
-    if (typeof window === 'undefined') {
-      return initialLanguage || config.defaultLanguage;
-    }
-    
+  // Initialize language — always start with a stable default to avoid hydration
+  // mismatch, then detect the real language client-side in useEffect.
+  const [language, setLanguage] = useState<SupportedLanguage>(
+    initialLanguage || config.defaultLanguage
+  );
+
+  useEffect(() => {
     const queryLang = searchParams.get('lang');
     const cookieLang = getLanguageFromCookie();
-    
     const detected = detectLanguage(queryLang, cookieLang, null);
-    
-    // Persist query param to cookie if present
+
     if (queryLang && queryLang !== cookieLang) {
       setLanguageCookie(detected);
     }
-    
-    return detected;
-  });
+
+    setLanguage(detected);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [, setIsLoading] = useState(true);
