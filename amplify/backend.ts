@@ -5,7 +5,7 @@ import { publishApplyEvent } from './functions/publish-apply-event/resource.js';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { CfnOutput } from 'aws-cdk-lib';
+import { CfnOutput, Stack } from 'aws-cdk-lib';
 
 // Note: Data/database removed per requirements - this is a stateless apply form
 // that uploads CVs to S3 and emits EventBridge events
@@ -38,9 +38,13 @@ applyEventBus.addToResourcePolicy(new iam.PolicyStatement({
   resources: [applyEventBus.eventBusArn],
 }));
 
+// --- Everything below modifies the function in its own stack ---
+// This keeps dependencies one-way: function stack → EventsStack (no circular ref).
+const publishFn = backend.publishApplyEvent.resources.lambda as lambda.Function;
+const functionStack = Stack.of(publishFn);
+
 // Grant the Lambda function permission to publish events
-const publishFnRole = backend.publishApplyEvent.resources.lambda.role!;
-publishFnRole.addToPrincipalPolicy(new iam.PolicyStatement({
+publishFn.addToRolePolicy(new iam.PolicyStatement({
   effect: iam.Effect.ALLOW,
   actions: ['events:PutEvents'],
   resources: [applyEventBus.eventBusArn],
@@ -48,14 +52,13 @@ publishFnRole.addToPrincipalPolicy(new iam.PolicyStatement({
 
 // Add a Function URL so the SSR Lambda (which has no IAM credentials) can
 // invoke this function over HTTPS without needing AWS SDK credentials.
-const publishFn = backend.publishApplyEvent.resources.lambda as lambda.Function;
 const fnUrl = publishFn.addFunctionUrl({
   authType: lambda.FunctionUrlAuthType.NONE,
 });
 
 // Output the Function URL so it can be set as PUBLISH_APPLY_EVENT_URL
 // in the Amplify app's environment variables.
-new CfnOutput(eventsStack, 'PublishApplyEventUrl', {
+new CfnOutput(functionStack, 'PublishApplyEventUrl', {
   value: fnUrl.url,
   description: 'Function URL for the publish-apply-event Lambda',
 });
