@@ -17,6 +17,11 @@ const nextConfig = {
     ],
   },
   
+  // Pass server-side env vars so they are available at SSR runtime
+  env: {
+    PUBLISH_APPLY_EVENT_URL: process.env.PUBLISH_APPLY_EVENT_URL,
+  },
+
   // Enable standalone output for containerized deployments
   output: 'standalone',
   
