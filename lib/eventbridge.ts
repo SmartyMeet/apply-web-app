@@ -29,7 +29,7 @@ let client: EventBridgeClient | null = null;
 function getClient(): EventBridgeClient {
   if (!client) {
     client = new EventBridgeClient({
-      region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION,
+      region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1',
     });
   }
   return client;
