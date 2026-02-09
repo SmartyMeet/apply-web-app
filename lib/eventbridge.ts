@@ -5,7 +5,7 @@ import {
 
 const SM_ENV = process.env.SM_ENV || 'dev';
 const EVENT_BUS_NAME = `sm-${SM_ENV}-app-apply-eventbus`;
-const EVENT_SOURCE = `sm.${SM_ENV}.app`;
+const EVENT_SOURCE = `sm:${SM_ENV}:app`;
 const EVENT_DETAIL_TYPE = 'apply:file:uploaded';
 
 export interface ApplyEventDetail {
