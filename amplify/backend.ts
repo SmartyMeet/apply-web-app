@@ -43,6 +43,10 @@ applyEventBus.addToResourcePolicy(new iam.PolicyStatement({
 const publishFn = backend.publishApplyEvent.resources.lambda as lambda.Function;
 const functionStack = Stack.of(publishFn);
 
+// Override the Lambda function name to follow naming convention
+const cfnFunction = publishFn.node.defaultChild as lambda.CfnFunction;
+cfnFunction.functionName = `sm-${smEnv}-app-apply-function-publish-event`;
+
 // Grant the Lambda function permission to publish events
 publishFn.addToRolePolicy(new iam.PolicyStatement({
   effect: iam.Effect.ALLOW,
