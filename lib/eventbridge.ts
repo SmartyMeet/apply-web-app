@@ -1,12 +1,7 @@
 import {
-  EventBridgeClient,
-  PutEventsCommand,
-} from '@aws-sdk/client-eventbridge';
-
-const SM_ENV = process.env.SM_ENV || 'dev';
-const EVENT_BUS_NAME = `sm-${SM_ENV}-app-apply-eventbus`;
-const EVENT_SOURCE = `sm:${SM_ENV}:app`;
-const EVENT_DETAIL_TYPE = 'apply:file:uploaded';
+  LambdaClient,
+  InvokeCommand,
+} from '@aws-sdk/client-lambda';
 
 export interface ApplyEventDetail {
   tenant: string;
@@ -24,11 +19,14 @@ export interface ApplyEventDetail {
   sourceJobId: string;
 }
 
-let client: EventBridgeClient | null = null;
+const SM_ENV = process.env.SM_ENV || 'dev';
+const FUNCTION_NAME = process.env.PUBLISH_APPLY_EVENT_FUNCTION_NAME || `sm-${SM_ENV}-publish-apply-event`;
 
-function getClient(): EventBridgeClient {
+let client: LambdaClient | null = null;
+
+function getClient(): LambdaClient {
   if (!client) {
-    client = new EventBridgeClient({
+    client = new LambdaClient({
       region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1',
     });
   }
@@ -36,37 +34,28 @@ function getClient(): EventBridgeClient {
 }
 
 /**
- * Publish an apply event to EventBridge. Fire-and-forget: errors are logged
- * but never thrown so that a failed event does not break the user-facing response.
+ * Publish an apply event by invoking the dedicated Lambda function.
+ * Fire-and-forget: errors are logged but never thrown so that a failed
+ * event does not break the user-facing response.
  */
 export async function publishApplyEvent(
   detail: ApplyEventDetail,
 ): Promise<void> {
   try {
-    const cmd = new PutEventsCommand({
-      Entries: [
-        {
-          Source: EVENT_SOURCE,
-          DetailType: EVENT_DETAIL_TYPE,
-          EventBusName: EVENT_BUS_NAME,
-          Detail: JSON.stringify(detail),
-        },
-      ],
+    const cmd = new InvokeCommand({
+      FunctionName: FUNCTION_NAME,
+      InvocationType: 'Event', // async / fire-and-forget
+      Payload: new TextEncoder().encode(JSON.stringify(detail)),
     });
 
     const result = await getClient().send(cmd);
 
-    if (result.FailedEntryCount && result.FailedEntryCount > 0) {
-      console.error(
-        '[EventBridge] Failed entries:',
-        JSON.stringify(result.Entries),
-      );
+    if (result.StatusCode && result.StatusCode >= 200 && result.StatusCode < 300) {
+      console.log(`[EventBridge] Lambda invoked successfully (status ${result.StatusCode})`);
     } else {
-      console.log(
-        `[EventBridge] Event published: ${EVENT_DETAIL_TYPE}`,
-      );
+      console.error(`[EventBridge] Lambda invocation unexpected status: ${result.StatusCode}`);
     }
   } catch (error) {
-    console.error('[EventBridge] Error publishing event:', error);
+    console.error('[EventBridge] Error invoking Lambda:', error);
   }
 }
