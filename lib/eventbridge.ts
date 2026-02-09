@@ -1,8 +1,3 @@
-import {
-  LambdaClient,
-  InvokeCommand,
-} from '@aws-sdk/client-lambda';
-
 export interface ApplyEventDetail {
   tenant: string;
   language: string;
@@ -19,41 +14,33 @@ export interface ApplyEventDetail {
   sourceJobId: string;
 }
 
-const SM_ENV = process.env.SM_ENV || 'dev';
-const FUNCTION_NAME = process.env.PUBLISH_APPLY_EVENT_FUNCTION_NAME || `sm-${SM_ENV}-publish-apply-event`;
-
-let client: LambdaClient | null = null;
-
-function getClient(): LambdaClient {
-  if (!client) {
-    client = new LambdaClient({
-      region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1',
-    });
-  }
-  return client;
-}
+const PUBLISH_URL = process.env.PUBLISH_APPLY_EVENT_URL;
 
 /**
- * Publish an apply event by invoking the dedicated Lambda function.
+ * Publish an apply event by calling the dedicated Lambda Function URL.
  * Fire-and-forget: errors are logged but never thrown so that a failed
  * event does not break the user-facing response.
  */
 export async function publishApplyEvent(
   detail: ApplyEventDetail,
 ): Promise<void> {
+  if (!PUBLISH_URL) {
+    console.error('[EventBridge] PUBLISH_APPLY_EVENT_URL is not set — skipping event publish');
+    return;
+  }
+
   try {
-    const cmd = new InvokeCommand({
-      FunctionName: FUNCTION_NAME,
-      InvocationType: 'Event', // async / fire-and-forget
-      Payload: new TextEncoder().encode(JSON.stringify(detail)),
+    const response = await fetch(PUBLISH_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(detail),
     });
 
-    const result = await getClient().send(cmd);
-
-    if (result.StatusCode && result.StatusCode >= 200 && result.StatusCode < 300) {
-      console.log(`[EventBridge] Lambda invoked successfully (status ${result.StatusCode})`);
+    if (response.ok) {
+      console.log(`[EventBridge] Lambda invoked successfully (status ${response.status})`);
     } else {
-      console.error(`[EventBridge] Lambda invocation unexpected status: ${result.StatusCode}`);
+      const text = await response.text();
+      console.error(`[EventBridge] Lambda returned status ${response.status}: ${text}`);
     }
   } catch (error) {
     console.error('[EventBridge] Error invoking Lambda:', error);

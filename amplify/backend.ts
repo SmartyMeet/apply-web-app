@@ -5,6 +5,7 @@ import { publishApplyEvent } from './functions/publish-apply-event/resource.js';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import { CfnOutput } from 'aws-cdk-lib';
 
 // Note: Data/database removed per requirements - this is a stateless apply form
 // that uploads CVs to S3 and emits EventBridge events
@@ -45,11 +46,16 @@ publishFnRole.addToPrincipalPolicy(new iam.PolicyStatement({
   resources: [applyEventBus.eventBusArn],
 }));
 
-// Allow any principal in the same account to invoke the Lambda function.
-// This lets the Amplify Hosting SSR Lambda (whose role is managed by Amplify)
-// invoke this function without needing an explicit SSR Compute Role.
+// Add a Function URL so the SSR Lambda (which has no IAM credentials) can
+// invoke this function over HTTPS without needing AWS SDK credentials.
 const publishFn = backend.publishApplyEvent.resources.lambda as lambda.Function;
-publishFn.addPermission('AllowAccountInvoke', {
-  principal: new iam.AccountPrincipal(eventsStack.account),
-  action: 'lambda:InvokeFunction',
+const fnUrl = publishFn.addFunctionUrl({
+  authType: lambda.FunctionUrlAuthType.NONE,
+});
+
+// Output the Function URL so it can be set as PUBLISH_APPLY_EVENT_URL
+// in the Amplify app's environment variables.
+new CfnOutput(eventsStack, 'PublishApplyEventUrl', {
+  value: fnUrl.url,
+  description: 'Function URL for the publish-apply-event Lambda',
 });

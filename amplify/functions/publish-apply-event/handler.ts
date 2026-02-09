@@ -24,19 +24,30 @@ export interface ApplyEventDetail {
   sourceJobId: string;
 }
 
+interface FunctionUrlEvent {
+  body?: string;
+  isBase64Encoded?: boolean;
+}
+
 const client = new EventBridgeClient({
   region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1',
 });
 
-export const handler = async (event: ApplyEventDetail): Promise<{ statusCode: number; body: string }> => {
+export const handler = async (event: FunctionUrlEvent): Promise<{ statusCode: number; body: string }> => {
   try {
+    // Parse the payload from the Function URL request body
+    const rawBody = event.isBase64Encoded
+      ? Buffer.from(event.body || '', 'base64').toString('utf-8')
+      : event.body || '{}';
+    const detail: ApplyEventDetail = JSON.parse(rawBody);
+
     const cmd = new PutEventsCommand({
       Entries: [
         {
           Source: EVENT_SOURCE,
           DetailType: EVENT_DETAIL_TYPE,
           EventBusName: EVENT_BUS_NAME,
-          Detail: JSON.stringify(event),
+          Detail: JSON.stringify(detail),
         },
       ],
     });
