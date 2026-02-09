@@ -34,12 +34,25 @@ export function ApplyPage({ tenant, sourceJobId, initialLanguage }: ApplyPagePro
   const [trackingData, setTrackingData] = useState<UrlTrackingData | null>(null);
 
   useEffect(() => {
+    // Check sessionStorage first — preserves tracking across internal navigations
+    const stored = sessionStorage.getItem('st_tracking');
+    if (stored) {
+      try {
+        setTrackingData(JSON.parse(stored));
+        return;
+      } catch {
+        // Malformed — fall through to capture fresh data
+      }
+    }
+
     const referrer = document.referrer || '(direct)';
 
     // Get navigation performance data (redirect count, type)
     const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
     const redirectCount = navEntry?.redirectCount ?? 0;
     const navigationType = navEntry?.type ?? 'unknown';
+
+    let data: UrlTrackingData;
 
     // Try reading the middleware cookie first
     const cookieMatch = document.cookie
@@ -49,35 +62,41 @@ export function ApplyPage({ tenant, sourceJobId, initialLanguage }: ApplyPagePro
     if (cookieMatch) {
       try {
         const payload = JSON.parse(decodeURIComponent(cookieMatch.split('=').slice(1).join('=')));
-        setTrackingData({
+        data = {
           // Prefer server-side referer (full URL), fall back to client-side
           referrer: payload.referer || referrer,
           params: payload.params || {},
           landingUrl: payload.landingUrl || window.location.href,
           redirectCount,
           navigationType,
-        });
+        };
         // Clear the cookie so it doesn't leak into subsequent navigations
         document.cookie = 'st_tracking=; path=/; max-age=0';
-        return;
       } catch {
         // Malformed cookie — fall through to client-side detection
+        data = null as unknown as UrlTrackingData;
       }
     }
 
-    // Fallback: read from current URL (works when params are still present)
-    const params: Record<string, string> = {};
-    searchParams.forEach((value, key) => {
-      params[key] = value;
-    });
+    if (!data!) {
+      // Fallback: read from current URL (works when params are still present)
+      const params: Record<string, string> = {};
+      searchParams.forEach((value, key) => {
+        params[key] = value;
+      });
 
-    setTrackingData({
-      referrer,
-      params,
-      landingUrl: window.location.href,
-      redirectCount,
-      navigationType,
-    });
+      data = {
+        referrer,
+        params,
+        landingUrl: window.location.href,
+        redirectCount,
+        navigationType,
+      };
+    }
+
+    // Persist in sessionStorage so it survives internal navigations
+    sessionStorage.setItem('st_tracking', JSON.stringify(data));
+    setTrackingData(data);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialize language — always start with a stable default to avoid hydration
