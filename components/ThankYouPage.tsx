@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+
 import { config, SupportedLanguage } from '@/lib/config';
 import { getTranslations, getLanguageFromCookie, detectLanguage } from '@/i18n';
 import { Theme, defaultTheme, loadTheme } from '@/lib/theme';
@@ -45,7 +45,6 @@ export function ThankYouPage({ tenant }: ThankYouPageProps) {
     setLanguage(newLang);
   };
   
-  const homePath = tenant === config.defaultTenant ? '/' : `/${tenant}`;
 
   // Background styles
   const backgroundStyles: React.CSSProperties = backgroundUrl
@@ -117,18 +116,6 @@ export function ThankYouPage({ tenant }: ThankYouPageProps) {
               <p className="text-gray-600 mb-6">
                 {translations.thankYou.message}
               </p>
-              
-              {/* Back to form link */}
-              <Link 
-                href={homePath}
-                className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-white font-medium transition-colors"
-                style={{ 
-                  backgroundColor: theme.primaryColor,
-                  borderRadius: theme.buttonRadius 
-                }}
-              >
-                {translations.thankYou.backHome}
-              </Link>
             </div>
           </div>
         </main>
