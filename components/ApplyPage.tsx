@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { config, SupportedLanguage } from '@/lib/config';
 import { getTranslations, detectLanguage, getLanguageFromCookie, setLanguageCookie } from '@/i18n';
 import { Theme, defaultTheme, loadTheme } from '@/lib/theme';
-import { JobData, loadJobData, mapLocaleToLanguage, getLocalizedJobName } from '@/lib/job';
+import { JobData, loadJobData, mapLocaleToLanguage, getLocalizedJobInfo } from '@/lib/job';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ApplyForm } from './ApplyForm';
 import { TenantLogo } from './TenantLogo';
@@ -134,7 +134,7 @@ export function ApplyPage({ tenant, sourceJobId, initialLanguage }: ApplyPagePro
         const jobLang = mapLocaleToLanguage(data.language);
         setLanguage(jobLang);
         setLanguageCookie(jobLang);
-        setJobName(getLocalizedJobName(data, jobLang));
+        setJobName(getLocalizedJobInfo(data, jobLang));
       } else {
         // No job data — fall back to normal language detection
         const queryLang = searchParams.get('lang');
@@ -168,7 +168,7 @@ export function ApplyPage({ tenant, sourceJobId, initialLanguage }: ApplyPagePro
   const handleLanguageChange = (newLang: SupportedLanguage) => {
     setLanguage(newLang);
     if (jobData) {
-      setJobName(getLocalizedJobName(jobData, newLang));
+      setJobName(getLocalizedJobInfo(jobData, newLang));
     }
   };
 

@@ -3,7 +3,8 @@ import { config, SupportedLanguage } from '@/lib/config';
 export interface JobData {
   name: Record<string, string>;
   language: string;
-  locations?: Record<string, unknown>[];
+  locations?: Record<string, { region: string; country: string; city: string }[]>;
+  department?: Record<string, string>;
   [key: string]: unknown;
 }
 
@@ -52,22 +53,29 @@ export function mapLocaleToLanguage(locale: string): SupportedLanguage {
 }
 
 /**
- * Get the localized job name for a given language.
- * Matches "it" against locale keys like "it-IT". Falls back to the first available name.
+ * Find the value for a given language from a locale-keyed record.
+ * Matches "it" against keys like "it-IT". Falls back to the first available key.
  */
-export function getLocalizedJobName(jobData: JobData, language: SupportedLanguage): string | null {
-  const names = jobData.name;
-  if (!names || typeof names !== 'object') return null;
+function findLocalized<T>(record: Record<string, T> | undefined, language: SupportedLanguage): T | undefined {
+  if (!record || typeof record !== 'object') return undefined;
 
-  const keys = Object.keys(names);
-  if (keys.length === 0) return null;
+  const keys = Object.keys(record);
+  if (keys.length === 0) return undefined;
 
-  // Find a locale key whose first two chars match the language
   const matchingKey = keys.find((k) => k.slice(0, 2).toLowerCase() === language);
-  if (matchingKey) {
-    return names[matchingKey];
-  }
+  return matchingKey ? record[matchingKey] : record[keys[0]];
+}
 
-  // Fallback to the first available name
-  return names[keys[0]];
+/**
+ * Get localized job info (name, city, department) joined with " | ".
+ * Matches "it" against locale keys like "it-IT". Falls back to the first available key.
+ */
+export function getLocalizedJobInfo(jobData: JobData, language: SupportedLanguage): string | null {
+  const name = findLocalized(jobData.name, language);
+  if (!name) return null;
+
+  const city = findLocalized(jobData.locations, language)?.[0]?.city;
+  const department = findLocalized(jobData.department, language);
+
+  return [name, city, department].filter(Boolean).join(' | ');
 }
