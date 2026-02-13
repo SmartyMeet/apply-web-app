@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { config, SupportedLanguage } from '@/lib/config';
 import { getTranslations, detectLanguage, getLanguageFromCookie, setLanguageCookie } from '@/i18n';
 import { Theme, defaultTheme, loadTheme } from '@/lib/theme';
+import { JobData, loadJobData, mapLocaleToLanguage, getLocalizedJobName } from '@/lib/job';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ApplyForm } from './ApplyForm';
 import { TenantLogo } from './TenantLogo';
@@ -105,7 +106,13 @@ export function ApplyPage({ tenant, sourceJobId, initialLanguage }: ApplyPagePro
     initialLanguage || config.defaultLanguage
   );
 
+  const [jobData, setJobData] = useState<JobData | null>(null);
+  const [jobName, setJobName] = useState<string | null>(null);
+
+  // Language detection — skipped when sourceJobId is present (job language takes priority)
   useEffect(() => {
+    if (sourceJobId) return; // job data effect will set the language
+
     const queryLang = searchParams.get('lang');
     const cookieLang = getLanguageFromCookie();
     const detected = detectLanguage(queryLang, cookieLang, null);
@@ -116,6 +123,30 @@ export function ApplyPage({ tenant, sourceJobId, initialLanguage }: ApplyPagePro
 
     setLanguage(detected);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load job data from CDN when sourceJobId is present
+  useEffect(() => {
+    if (!sourceJobId) return;
+
+    loadJobData(tenant, sourceJobId).then((data) => {
+      if (data) {
+        setJobData(data);
+        const jobLang = mapLocaleToLanguage(data.language);
+        setLanguage(jobLang);
+        setLanguageCookie(jobLang);
+        setJobName(getLocalizedJobName(data, jobLang));
+      } else {
+        // No job data — fall back to normal language detection
+        const queryLang = searchParams.get('lang');
+        const cookieLang = getLanguageFromCookie();
+        const detected = detectLanguage(queryLang, cookieLang, null);
+        if (queryLang && queryLang !== cookieLang) {
+          setLanguageCookie(detected);
+        }
+        setLanguage(detected);
+      }
+    });
+  }, [tenant, sourceJobId]); // eslint-disable-line react-hooks/exhaustive-deps
   
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [, setIsLoading] = useState(true);
@@ -136,6 +167,9 @@ export function ApplyPage({ tenant, sourceJobId, initialLanguage }: ApplyPagePro
   
   const handleLanguageChange = (newLang: SupportedLanguage) => {
     setLanguage(newLang);
+    if (jobData) {
+      setJobName(getLocalizedJobName(jobData, newLang));
+    }
   };
 
   // Background styles
@@ -189,6 +223,11 @@ export function ApplyPage({ tenant, sourceJobId, initialLanguage }: ApplyPagePro
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                   {translations.form.title}
                 </h1>
+                {jobName && (
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mt-1">
+                    {jobName}
+                  </h2>
+                )}
                 <p className="text-gray-600">
                   {translations.form.subtitle}
                 </p>
